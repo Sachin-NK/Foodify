@@ -44,14 +44,14 @@ const Home = () => {
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Link href="/browse">
-              <Button className="bg-white text-orange-500 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 pulse-button">
+              <Button className="bg-white text-orange-500 px-8 py-4 rounded-lg font-semibold text-lg special-button button-bounce">
                 Browse Restaurants
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Button 
               variant="outline" 
-              className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-orange-500 transition-colors"
+              className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-orange-500 transition-colors button-bounce float-animation"
             >
               Become a Partner
             </Button>

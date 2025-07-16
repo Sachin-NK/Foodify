@@ -28,7 +28,7 @@ const FoodItemCard = ({ item, restaurant }) => {
       transition={{ duration: 0.3 }}
       whileHover={{ scale: 1.02 }}
     >
-      <Card className="overflow-hidden card-hover">
+      <Card className="overflow-hidden food-card">
         <div className="relative h-48">
           <img
             src={`https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&fit=crop&w=800&h=400&q=80`}
@@ -49,7 +49,7 @@ const FoodItemCard = ({ item, restaurant }) => {
             <motion.div whileTap={{ scale: 0.95 }}>
               <Button 
                 onClick={handleAddToCart}
-                className="bg-orange-500 hover:bg-orange-600 text-white bounce-animation"
+                className="bg-orange-500 hover:bg-orange-600 text-white button-bounce interactive-bounce"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add to Cart

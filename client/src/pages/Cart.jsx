@@ -35,7 +35,7 @@ const Cart = () => {
             </motion.div>
             
             <Link href="/browse">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3">
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 button-bounce special-button">
                 Browse Restaurants
               </Button>
             </Link>
@@ -55,7 +55,7 @@ const Cart = () => {
         >
           <h1 className="text-4xl font-bold font-sans text-gray-800">Your Cart</h1>
           <Link href="/browse">
-            <Button variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200">
+            <Button variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200 button-bounce interactive-bounce">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Continue Shopping
             </Button>
@@ -124,7 +124,7 @@ const Cart = () => {
               className="mt-6"
             >
               <Link href="/checkout">
-                <Button className="w-full bg-orange-500 text-white py-4 rounded-lg font-semibold text-lg hover:bg-orange-600 pulse-button">
+                <Button className="w-full bg-orange-500 text-white py-4 rounded-lg font-semibold text-lg hover:bg-orange-600 special-button button-bounce">
                   Proceed to Checkout
                 </Button>
               </Link>

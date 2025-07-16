@@ -88,7 +88,7 @@ const Browse = () => {
                 placeholder="Search restaurants..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-64"
+                className="pl-10 pr-4 py-2 w-64 button-bounce focus:shadow-lg transition-all duration-300"
               />
             </div>
           </div>
@@ -168,7 +168,7 @@ const Browse = () => {
                   setSearchQuery('');
                 }}
                 variant="outline"
-                className="w-full"
+                className="w-full button-bounce interactive-bounce"
               >
                 Clear Filters
               </Button>
@@ -211,7 +211,7 @@ const Browse = () => {
                     setDeliveryTimeFilter('all');
                     setSearchQuery('');
                   }}
-                  className="mt-4 bg-orange-500 hover:bg-orange-600"
+                  className="mt-4 bg-orange-500 hover:bg-orange-600 button-bounce special-button"
                 >
                   Clear Filters
                 </Button>

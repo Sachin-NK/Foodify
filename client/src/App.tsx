@@ -16,6 +16,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Admin from "@/pages/Admin";
 import Navbar from "@/components/Navbar";
+import Chatbot from "@/components/Chatbot.jsx";
 
 function Router() {
   return (
@@ -43,6 +44,7 @@ function App() {
             <div className="min-h-screen bg-gray-50">
               <Navbar />
               <Router />
+              <Chatbot />
             </div>
             <Toaster />
           </CartProvider>

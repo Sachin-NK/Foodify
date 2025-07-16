@@ -18,7 +18,7 @@ const RestaurantCard = ({ restaurant }) => {
       transition={{ duration: 0.5 }}
       whileHover={{ y: -4 }}
     >
-      <Card className="overflow-hidden card-hover">
+      <Card className="overflow-hidden restaurant-card">
         <div className="relative h-48">
           <img
             src={`https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&h=400&q=80`}
