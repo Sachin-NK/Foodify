@@ -1,0 +1,135 @@
+ 3. Restaurant Menu Page
+✅ Dummy Menu for Burger Hub
+json
+Copy
+Edit
+[
+  {
+    "id": 1,
+    "name": "Classic Beef Burger",
+    "image": "/images/classic-beef-burger.jpg",
+    "description": "Juicy grilled beef patty, cheddar, lettuce, tomato, and special sauce.",
+    "price": 850
+  },
+  {
+    "id": 2,
+    "name": "Chicken Zinger",
+    "image": "/images/chicken-zinger.jpg",
+    "description": "Crispy chicken fillet with spicy mayo, lettuce, and cheese.",
+    "price": 790
+  },
+  {
+    "id": 3,
+    "name": "Double Trouble Combo",
+    "image": "/images/double-trouble.jpg",
+    "description": "Two burgers, fries, and a drink. Perfect for sharing!",
+    "price": 1600
+  }
+]
+💫 UI Behavior
+Show restaurant logo, cover image, name
+
+Menu displayed as cards
+
+Show food image, name, short description, price
+
+Button: “Add to Cart” (on click, bounce animation)
+
+Hover effect on cards: zoom in, shadow grow
+
+Use Framer Motion for slide-in or fade-in of menu items
+
+🛒 4. Cart Page
+✅ Sample Cart Data
+json
+Copy
+Edit
+[
+  {
+    "restaurantId": 2,
+    "restaurantName": "Burger Hub",
+    "items": [
+      {
+        "id": 1,
+        "name": "Classic Beef Burger",
+        "price": 850,
+        "quantity": 2,
+        "image": "/images/classic-beef-burger.jpg"
+      },
+      {
+        "id": 2,
+        "name": "Chicken Zinger",
+        "price": 790,
+        "quantity": 1,
+        "image": "/images/chicken-zinger.jpg"
+      }
+    ]
+  }
+]
+💫 UI Behavior
+Cart list grouped by restaurant (optional)
+
+Each item:
+
+Thumbnail image
+
+Name
+
+Quantity (with “+” and “–” buttons)
+
+“Remove” button
+
+Total: Show grand total at bottom
+
+Animate item quantity changes or removal with Framer Motion
+
+Checkout button at bottom with pulse effect
+
+✅ 5. Checkout Page
+📝 Form Fields
+Full Name (required)
+
+Email (required, valid format)
+
+Delivery Address (required)
+
+Mobile Number (required, 10 digits)
+
+💻 API Call Example
+Send this payload to: POST /api/order
+
+json
+Copy
+Edit
+{
+  "user": {
+    "name": "Sachintha Nadeeshan",
+    "email": "sachin@example.com",
+    "address": "No. 23, Main Street, Galle",
+    "phone": "0771234567"
+  },
+  "order": {
+    "restaurantId": 2,
+    "items": [
+      { "menuItemId": 1, "quantity": 2 },
+      { "menuItemId": 2, "quantity": 1 }
+    ]
+  }
+}
+🎉 UI Behavior
+On success:
+
+Show full-screen success message
+
+Use Framer Motion or Lottie animation (e.g., green checkmark, delivery truck)
+
+Display estimated delivery time
+
+Clear cart and redirect user to "Track Order" or Home
+
+🛠️ Images & Assets
+You can use:
+
+https://unsplash.com/s/photos/burger
+
+https://www.flaticon.com/ for icons (cart, delivery, etc.)

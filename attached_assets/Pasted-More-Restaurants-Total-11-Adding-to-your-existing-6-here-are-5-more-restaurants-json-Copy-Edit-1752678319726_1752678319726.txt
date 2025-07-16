@@ -1,0 +1,263 @@
+More Restaurants (Total: 11)
+Adding to your existing 6, here are 5 more restaurants:
+
+json
+Copy
+Edit
+[
+  {
+    "id": 7,
+    "name": "Taco Town",
+    "logo": "/images/taco-town-logo.png",
+    "location": "Nugegoda",
+    "tags": ["Mexican", "Tacos", "Spicy"],
+    "rating": 4.4,
+    "deliveryTime": "20-30 min",
+    "coverImage": "/images/taco-town-cover.jpg"
+  },
+  {
+    "id": 8,
+    "name": "Kottu Kulture",
+    "logo": "/images/kottu-kulture-logo.png",
+    "location": "Jaffna",
+    "tags": ["Sri Lankan", "Kottu", "Street Food"],
+    "rating": 4.7,
+    "deliveryTime": "15-25 min",
+    "coverImage": "/images/kottu-kulture-cover.jpg"
+  },
+  {
+    "id": 9,
+    "name": "Sushi Sensation",
+    "logo": "/images/sushi-sensation-logo.png",
+    "location": "Dehiwala",
+    "tags": ["Japanese", "Sushi", "Seafood"],
+    "rating": 4.9,
+    "deliveryTime": "30-40 min",
+    "coverImage": "/images/sushi-sensation-cover.jpg"
+  },
+  {
+    "id": 10,
+    "name": "Toast & Brew",
+    "logo": "/images/toast-brew-logo.png",
+    "location": "Battaramulla",
+    "tags": ["Cafe", "Brunch", "Coffee"],
+    "rating": 4.3,
+    "deliveryTime": "20-30 min",
+    "coverImage": "/images/toast-brew-cover.jpg"
+  },
+  {
+    "id": 11,
+    "name": "Wrap Republic",
+    "logo": "/images/wrap-republic-logo.png",
+    "location": "Nawala",
+    "tags": ["Healthy", "Wraps", "Fusion"],
+    "rating": 4.6,
+    "deliveryTime": "25-35 min",
+    "coverImage": "/images/wrap-republic-cover.jpg"
+  }
+]
+🌮 Taco Town — Menu Items
+json
+Copy
+Edit
+[
+  {
+    "id": 501,
+    "name": "Beef Tacos",
+    "image": "/images/beef-tacos.jpg",
+    "description": "Three crispy tacos with spicy minced beef and salsa.",
+    "price": 950
+  },
+  {
+    "id": 502,
+    "name": "Chicken Quesadilla",
+    "image": "/images/quesadilla.jpg",
+    "description": "Grilled tortilla with melted cheese and seasoned chicken.",
+    "price": 890
+  },
+  {
+    "id": 503,
+    "name": "Loaded Nachos",
+    "image": "/images/nachos.jpg",
+    "description": "Topped with cheese, beans, salsa, sour cream and jalapenos.",
+    "price": 800
+  },
+  {
+    "id": 504,
+    "name": "Guacamole & Chips",
+    "image": "/images/guacamole.jpg",
+    "description": "Creamy guacamole with crunchy tortilla chips.",
+    "price": 550
+  },
+  {
+    "id": 505,
+    "name": "Spicy Burrito Bowl",
+    "image": "/images/burrito-bowl.jpg",
+    "description": "Rice, beans, beef, salsa, corn and cheese.",
+    "price": 1050
+  }
+]
+🔥 Kottu Kulture — Menu Items
+json
+Copy
+Edit
+[
+  {
+    "id": 601,
+    "name": "Cheese Chicken Kottu",
+    "image": "/images/cheese-kottu.jpg",
+    "description": "Soft kottu with spicy chicken and gooey cheese.",
+    "price": 800
+  },
+  {
+    "id": 602,
+    "name": "Seafood Kottu",
+    "image": "/images/seafood-kottu.jpg",
+    "description": "Shrimp, cuttlefish, and crab meat with kottu.",
+    "price": 950
+  },
+  {
+    "id": 603,
+    "name": "Egg Vegetable Kottu",
+    "image": "/images/veg-kottu.jpg",
+    "description": "A lighter, vegetarian-friendly version of classic kottu.",
+    "price": 690
+  },
+  {
+    "id": 604,
+    "name": "Devilled Sausage Kottu",
+    "image": "/images/sausage-kottu.jpg",
+    "description": "Devilled sausage bits blended with spicy roti shreds.",
+    "price": 790
+  },
+  {
+    "id": 605,
+    "name": "Mutton Kottu",
+    "image": "/images/mutton-kottu.jpg",
+    "description": "Soft roti mixed with tender mutton curry chunks.",
+    "price": 1100
+  }
+]
+🍣 Sushi Sensation — Menu Items
+json
+Copy
+Edit
+[
+  {
+    "id": 701,
+    "name": "California Roll",
+    "image": "/images/california-roll.jpg",
+    "description": "Crab, avocado, and cucumber rolled in seaweed and rice.",
+    "price": 1150
+  },
+  {
+    "id": 702,
+    "name": "Salmon Nigiri",
+    "image": "/images/salmon-nigiri.jpg",
+    "description": "Fresh sliced salmon on seasoned rice.",
+    "price": 1050
+  },
+  {
+    "id": 703,
+    "name": "Tuna Maki Roll",
+    "image": "/images/tuna-maki.jpg",
+    "description": "Tuna, wasabi and cucumber in rice roll.",
+    "price": 950
+  },
+  {
+    "id": 704,
+    "name": "Tempura Prawns",
+    "image": "/images/tempura.jpg",
+    "description": "Crispy fried prawns served with soy sauce.",
+    "price": 990
+  },
+  {
+    "id": 705,
+    "name": "Miso Soup",
+    "image": "/images/miso-soup.jpg",
+    "description": "Hot broth with tofu, seaweed, and green onion.",
+    "price": 450
+  }
+]
+☕ Toast & Brew — Menu Items
+json
+Copy
+Edit
+[
+  {
+    "id": 801,
+    "name": "Avocado Toast",
+    "image": "/images/avocado-toast.jpg",
+    "description": "Sourdough topped with smashed avocado and poached egg.",
+    "price": 850
+  },
+  {
+    "id": 802,
+    "name": "Breakfast Platter",
+    "image": "/images/breakfast-platter.jpg",
+    "description": "Eggs, bacon, toast, hash browns and sausage.",
+    "price": 1150
+  },
+  {
+    "id": 803,
+    "name": "Iced Caramel Latte",
+    "image": "/images/caramel-latte.jpg",
+    "description": "Cold brew with caramel syrup and fresh milk.",
+    "price": 600
+  },
+  {
+    "id": 804,
+    "name": "Blueberry Pancakes",
+    "image": "/images/pancakes.jpg",
+    "description": "Fluffy pancakes with blueberries and syrup.",
+    "price": 700
+  },
+  {
+    "id": 805,
+    "name": "Mocha Frappe",
+    "image": "/images/mocha-frappe.jpg",
+    "description": "Blended coffee drink with chocolate drizzle.",
+    "price": 650
+  }
+]
+🌯 Wrap Republic — Menu Items
+json
+Copy
+Edit
+[
+  {
+    "id": 901,
+    "name": "Grilled Chicken Wrap",
+    "image": "/images/chicken-wrap.jpg",
+    "description": "Grilled chicken, lettuce, tomato, and garlic sauce.",
+    "price": 790
+  },
+  {
+    "id": 902,
+    "name": "Falafel Wrap",
+    "image": "/images/falafel-wrap.jpg",
+    "description": "Vegan-friendly falafel with hummus and fresh veggies.",
+    "price": 740
+  },
+  {
+    "id": 903,
+    "name": "Beef Shawarma",
+    "image": "/images/shawarma.jpg",
+    "description": "Thin sliced beef in a pita with garlic and tahini.",
+    "price": 880
+  },
+  {
+    "id": 904,
+    "name": "BBQ Paneer Wrap",
+    "image": "/images/paneer-wrap.jpg",
+    "description": "Spicy paneer, BBQ sauce, onions and peppers.",
+    "price": 800
+  },
+  {
+    "id": 905,
+    "name": "Sweet Chili Tofu Wrap",
+    "image": "/images/tofu-wrap.jpg",
+    "description": "Tofu bites with sweet chili glaze and crunchy veggies.",
+    "price": 820
+  }
+]

@@ -1,0 +1,97 @@
+Build a modern, responsive frontend-only React application for a food ordering platform called “Foodify”.
+
+The theme should be colorful, fun, and food-focused, with smooth animations, icons, scroll effects, and a cohesive UI/UX across all pages.
+
+🖼️ Pages to Include:
+1. Landing Page
+Full-screen hero section with a high-quality background image (food-themed)
+
+Large animated headline: “Welcome to Foodify”
+
+CTA button: “Browse Menu” with hover and scroll-to-menu animation
+
+Use Framer Motion or AOS for entrance animations
+
+2. Menu Page
+Fetch menu data from a REST API (/api/menu)
+
+Categorize food (e.g., Burgers, Pizza, Desserts)
+
+Each card should include:
+
+Food image
+
+Name, price, description
+
+"Add to Cart" button with animated feedback (e.g., bounce, popup)
+
+3. Cart Page
+List added items with quantity, total price, and "Remove" button
+
+Cart updates should animate (e.g., using Framer Motion or CSS transitions)
+
+Use local state or Context API to manage the cart
+
+4. Checkout Page
+Simple form: name, email, address
+
+Client-side form validation
+
+On submit, send order to /api/order
+
+Show animated success message (e.g., checkmark animation or confetti)
+
+5. Login / Register
+Email & password forms
+
+POST to /api/login and /api/register
+
+Store token in localStorage or cookies
+
+Show/hide protected routes based on login state
+
+6. Admin Panel (optional)
+Form to add/edit menu items
+
+Display list of existing items
+
+Authenticated access only
+
+🎨 Design Guidelines:
+Use Tailwind CSS for layout and responsiveness
+
+Use Framer Motion for animations and transitions
+
+Use Google Fonts (like Poppins or Inter)
+
+Use React Icons for UI: cart, user, food, logout, etc.
+
+Color palette:
+
+🍕 Orange (CTA/buttons)
+
+🥗 Green (success/status)
+
+🍔 Red (remove/alert)
+
+Components to Animate:
+Menu card entrance (fade/slide in)
+
+Add-to-cart action (icon or toast)
+
+Page transitions (fade/slide)
+
+Success message (checkmark or confetti)
+
+🧠 State & API Handling:
+Use React Context API or Redux to manage:
+
+Cart state
+
+Auth state
+
+Use Axios to fetch/post data to API
+
+Store token/session using localStorage or browser cookies
+
+Show loader/spinner on data fetches and form submissions
