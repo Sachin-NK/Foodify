@@ -142,3 +142,7 @@ backend/.phpstorm.meta.php
 .sass-cache/
 connect.lock
 typings/
+
+
+.kiro
+.vscode

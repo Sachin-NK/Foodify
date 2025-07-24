@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'wouter';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCart, User, LogOut, Shield, MessageCircle } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Shield, MessageCircle, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 const Navbar = () => {
   const [location] = useLocation();
   const { getCartItemCount } = useCart();
-  const { user, logout, isAuthenticated, isAdmin } = useAuth();
+  const { user, logout, isAuthenticated, isAdmin, isRestaurantOwner } = useAuth();
   const cartItemCount = getCartItemCount();
 
   const handleLogout = () => {
@@ -54,6 +54,13 @@ const Navbar = () => {
                 </a>
               </Link>
             )}
+            {isRestaurantOwner() && (
+              <Link href="/restaurant-register">
+                <a className={`transition-colors button-bounce ${location.startsWith('/restaurant') ? 'text-orange-500 text-glow' : 'text-gray-700 hover:text-orange-500'}`}>
+                  My Restaurant
+                </a>
+              </Link>
+            )}
           </div>
           
           <div className="flex items-center space-x-4">
@@ -74,6 +81,13 @@ const Navbar = () => {
                   <Link href="/admin">
                     <Button variant="ghost" className="p-2 text-gray-700 hover:text-orange-500 button-bounce interactive-bounce">
                       <Shield className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                )}
+                {isRestaurantOwner() && (
+                  <Link href="/restaurant-register">
+                    <Button variant="ghost" className="p-2 text-gray-700 hover:text-orange-500 button-bounce interactive-bounce">
+                      <Store className="h-5 w-5" />
                     </Button>
                   </Link>
                 )}

@@ -5,28 +5,20 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\RestaurantController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\AuthController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-// Restaurant routes
 Route::get('/restaurants', [RestaurantController::class, 'index']);
 Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
 Route::get('/restaurants/{id}/menu', [RestaurantController::class, 'menu']);
 
-// Cart routes (session-based)
 Route::middleware(['web'])->group(function () {
     Route::get('/cart', [CartController::class, 'index']);
     Route::post('/cart', [CartController::class, 'store']);
@@ -36,10 +28,35 @@ Route::middleware(['web'])->group(function () {
     Route::get('/cart/count', [CartController::class, 'count']);
 });
 
-// Order routes
 Route::middleware(['web'])->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
     Route::get('/orders/{orderNumber}/track', [OrderController::class, 'track']);
-    Route::get('/orders', [OrderController::class, 'index']); // For admin/testing
+    Route::get('/orders', [OrderController::class, 'index']);
+});
+
+// Restaurant Owner Management Routes
+Route::middleware(['auth:sanctum', 'restaurant.owner'])->group(function () {
+    // Restaurant management
+    Route::get('/restaurants/owned', [App\Http\Controllers\Api\RestaurantOwnerController::class, 'index']);
+    Route::post('/restaurants', [App\Http\Controllers\Api\RestaurantOwnerController::class, 'store']);
+    Route::get('/restaurants/{id}/manage', [App\Http\Controllers\Api\RestaurantOwnerController::class, 'show']);
+    Route::put('/restaurants/{id}', [App\Http\Controllers\Api\RestaurantOwnerController::class, 'update']);
+    Route::delete('/restaurants/{id}', [App\Http\Controllers\Api\RestaurantOwnerController::class, 'destroy']);
+    
+    // Menu item management
+    Route::get('/restaurants/{restaurantId}/menu/manage', [App\Http\Controllers\Api\MenuManagementController::class, 'index']);
+    Route::post('/restaurants/{restaurantId}/menu', [App\Http\Controllers\Api\MenuManagementController::class, 'store']);
+    Route::get('/restaurants/{restaurantId}/menu/{itemId}', [App\Http\Controllers\Api\MenuManagementController::class, 'show']);
+    Route::put('/restaurants/{restaurantId}/menu/{itemId}', [App\Http\Controllers\Api\MenuManagementController::class, 'update']);
+    Route::delete('/restaurants/{restaurantId}/menu/{itemId}', [App\Http\Controllers\Api\MenuManagementController::class, 'destroy']);
+    Route::patch('/restaurants/{restaurantId}/menu/{itemId}/toggle', [App\Http\Controllers\Api\MenuManagementController::class, 'toggleAvailability']);
+    
+    // Menu category management
+    Route::get('/restaurants/{restaurantId}/categories', [App\Http\Controllers\Api\MenuCategoryController::class, 'index']);
+    Route::post('/restaurants/{restaurantId}/categories', [App\Http\Controllers\Api\MenuCategoryController::class, 'store']);
+    Route::get('/restaurants/{restaurantId}/categories/{categoryId}', [App\Http\Controllers\Api\MenuCategoryController::class, 'show']);
+    Route::put('/restaurants/{restaurantId}/categories/{categoryId}', [App\Http\Controllers\Api\MenuCategoryController::class, 'update']);
+    Route::delete('/restaurants/{restaurantId}/categories/{categoryId}', [App\Http\Controllers\Api\MenuCategoryController::class, 'destroy']);
+    Route::post('/restaurants/{restaurantId}/categories/sort', [App\Http\Controllers\Api\MenuCategoryController::class, 'updateSortOrder']);
 });

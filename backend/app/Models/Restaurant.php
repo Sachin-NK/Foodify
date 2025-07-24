@@ -14,11 +14,15 @@ class Restaurant extends Model
         'logo',
         'cover_image',
         'location',
+        'phone',
+        'email',
+        'address',
         'tags',
         'rating',
         'delivery_time',
         'description',
-        'is_active'
+        'is_active',
+        'owner_id'
     ];
 
     protected $casts = [
@@ -28,6 +32,11 @@ class Restaurant extends Model
     ];
 
     // Relationships
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
     public function menuItems()
     {
         return $this->hasMany(MenuItem::class);
@@ -36,6 +45,11 @@ class Restaurant extends Model
     public function availableMenuItems()
     {
         return $this->hasMany(MenuItem::class)->where('is_available', true);
+    }
+
+    public function menuCategories()
+    {
+        return $this->hasMany(MenuCategory::class);
     }
 
     // Scopes

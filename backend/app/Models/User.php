@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -41,4 +42,26 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    // Relationships
+    public function restaurants()
+    {
+        return $this->hasMany(Restaurant::class, 'owner_id');
+    }
+
+    // Helper methods
+    public function isRestaurantOwner()
+    {
+        return $this->role === 'restaurant_owner';
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function ownsRestaurant($restaurantId)
+    {
+        return $this->restaurants()->where('id', $restaurantId)->exists();
+    }
 }

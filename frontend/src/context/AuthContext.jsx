@@ -41,6 +41,10 @@ export const AuthProvider = ({ children }) => {
   const isAdmin = () => {
     return user?.isAdmin || false;
   };
+  
+  const isRestaurantOwner = () => {
+    return user?.isRestaurantOwner || false;
+  };
 
   return (
     <AuthContext.Provider value={{
@@ -49,6 +53,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       isAuthenticated,
       isAdmin,
+      isRestaurantOwner,
       loading
     }}>
       {children}

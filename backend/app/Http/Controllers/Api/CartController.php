@@ -8,9 +8,6 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    /**
-     * Get cart contents from session
-     */
     public function index(Request $request)
     {
         $cart = $request->session()->get('cart', []);
@@ -39,14 +36,11 @@ class CartController extends Controller
         return response()->json([
             'cart_items' => $cartItems,
             'subtotal' => $subtotal,
-            'delivery_fee' => $subtotal > 1500 ? 0 : 200, // Free delivery over Rs. 1500
+            'delivery_fee' => $subtotal > 1500 ? 0 : 200,
             'total' => $subtotal + ($subtotal > 1500 ? 0 : 200)
         ]);
     }
 
-    /**
-     * Add item to cart
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -65,13 +59,11 @@ class CartController extends Controller
         $itemId = $request->menu_item_id;
 
         if (isset($cart[$itemId])) {
-            // Update existing item
             $cart[$itemId]['quantity'] += $request->quantity;
             if ($request->special_instructions) {
                 $cart[$itemId]['special_instructions'] = $request->special_instructions;
             }
         } else {
-            // Add new item
             $cart[$itemId] = [
                 'quantity' => $request->quantity,
                 'special_instructions' => $request->special_instructions ?? ''
@@ -86,9 +78,6 @@ class CartController extends Controller
         ]);
     }
 
-    /**
-     * Update cart item quantity
-     */
     public function update(Request $request, $itemId)
     {
         $request->validate([
@@ -107,9 +96,6 @@ class CartController extends Controller
         return response()->json(['message' => 'Cart updated successfully']);
     }
 
-    /**
-     * Remove item from cart
-     */
     public function destroy(Request $request, $itemId)
     {
         $cart = $request->session()->get('cart', []);
@@ -124,18 +110,12 @@ class CartController extends Controller
         return response()->json(['message' => 'Item removed from cart successfully']);
     }
 
-    /**
-     * Clear entire cart
-     */
     public function clear(Request $request)
     {
         $request->session()->forget('cart');
         return response()->json(['message' => 'Cart cleared successfully']);
     }
 
-    /**
-     * Get cart item count
-     */
     public function count(Request $request)
     {
         $cart = $request->session()->get('cart', []);

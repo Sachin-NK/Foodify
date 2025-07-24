@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation } from 'wouter';
-import { useMutation } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Login = () => {
@@ -27,27 +25,7 @@ const Login = () => {
   
   const [showPassword, setShowPassword] = useState(false);
 
-  const loginMutation = useMutation({
-    mutationFn: async (credentials) => {
-      const response = await apiRequest('POST', '/api/login', credentials);
-      return response.json();
-    },
-    onSuccess: (user) => {
-      login(user);
-      toast({
-        title: "Login successful!",
-        description: "Welcome back to Foodify!",
-      });
-      setLocation('/browse');
-    },
-    onError: (error) => {
-      toast({
-        title: "Login failed",
-        description: "Invalid email or password. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -57,7 +35,7 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.email || !formData.password) {
@@ -68,10 +46,42 @@ const Login = () => {
       return;
     }
 
-    loginMutation.mutate({
-      email: formData.email,
-      password: formData.password
-    });
+    setIsLoading(true);
+
+    try {
+      // Import authApi from the API client
+      const { authApi } = await import('../lib/api');
+      
+      // Call the real authentication API
+      const response = await authApi.login(formData.email, formData.password);
+      
+      // Extract user data from response
+      const userData = response.user;
+      
+      // Store auth token if provided
+      if (response.token) {
+        localStorage.setItem('auth_token', response.token);
+      }
+
+      // Login user with real data from backend
+      login(userData);
+      
+      toast({
+        title: "Login successful!",
+        description: `Welcome back, ${userData.name}!`,
+      });
+      
+      setLocation('/browse');
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: error.message || "Invalid email or password. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -148,9 +158,9 @@ const Login = () => {
                 <Button 
                   type="submit" 
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 font-semibold"
-                  disabled={loginMutation.isPending}
+                  disabled={isLoading}
                 >
-                  {loginMutation.isPending ? <LoadingSpinner size="sm" /> : 'Sign In'}
+                  {isLoading ? <LoadingSpinner size="sm" /> : 'Sign In'}
                 </Button>
               </form>
               

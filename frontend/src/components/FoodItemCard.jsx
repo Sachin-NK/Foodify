@@ -1,17 +1,51 @@
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, LogIn } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
 
 const FoodItemCard = ({ item, restaurant }) => {
   const { addToCart } = useCart();
+  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
 
   const handleAddToCart = async () => {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      toast({
+        title: "Login Required",
+        description: "Please login to add items to your cart.",
+        variant: "default",
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/login')}
+            className="ml-2"
+          >
+            <LogIn className="h-4 w-4 mr-1" />
+            Login
+          </Button>
+        ),
+      });
+      return;
+    }
+
     try {
-      await addToCart(item.id, 1);
+      // Prepare item data for optimistic update
+      const itemData = {
+        name: item.name,
+        price: item.price,
+        restaurant_id: restaurant?.id,
+        restaurant_name: restaurant?.name,
+        image_url: item.image_url || `https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&fit=crop&w=800&h=400&q=80`
+      };
+      
+      await addToCart(item.id, 1, '', itemData);
       toast({
         title: "Added to cart!",
         description: `${item.name} has been added to your cart.`,
@@ -19,7 +53,7 @@ const FoodItemCard = ({ item, restaurant }) => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add item to cart. Please try again.",
+        description: error.message || "Failed to add item to cart. Please try again.",
         variant: "destructive"
       });
     }

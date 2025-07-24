@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "./context/CartContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { initializeCsrfToken } from "./lib/api";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Browse from "@/pages/Browse";
@@ -15,8 +16,12 @@ import TrackOrder from "@/pages/TrackOrder";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Admin from "@/pages/Admin";
+import RestaurantRegister from "@/pages/RestaurantRegister";
+import RestaurantDashboard from "@/pages/RestaurantDashboard";
+import RestaurantMenu from "@/pages/RestaurantMenu";
 import Navbar from "@/components/Navbar";
 import Chatbot from "@/components/Chatbot.jsx";
+import { useEffect } from "react";
 
 function Router() {
   return (
@@ -30,12 +35,20 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/admin" component={Admin} />
+      <Route path="/restaurant-register" component={RestaurantRegister} />
+      <Route path="/restaurant-dashboard/:id" component={RestaurantDashboard} />
+      <Route path="/restaurant-menu/:restaurantId" component={RestaurantMenu} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function App() {
+  useEffect(() => {
+    // Initialize CSRF token when app loads
+    initializeCsrfToken();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

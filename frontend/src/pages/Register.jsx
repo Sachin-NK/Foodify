@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation } from 'wouter';
-import { useMutation } from '@tanstack/react-query';
 import { Link } from 'wouter';
-import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { authApi } from '@/lib/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Register = () => {
@@ -26,33 +26,13 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     address: '',
+    role: 'customer',
     agreeTerms: false
   });
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const registerMutation = useMutation({
-    mutationFn: async (userData) => {
-      const response = await apiRequest('POST', '/api/register', userData);
-      return response.json();
-    },
-    onSuccess: (user) => {
-      login(user);
-      toast({
-        title: "Account created successfully!",
-        description: "Welcome to Foodify!",
-      });
-      setLocation('/browse');
-    },
-    onError: (error) => {
-      toast({
-        title: "Registration failed",
-        description: "There was an error creating your account. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -62,7 +42,7 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validation
@@ -101,13 +81,45 @@ const Register = () => {
       return;
     }
 
-    registerMutation.mutate({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      password: formData.password,
-      address: formData.address
-    });
+    setIsLoading(true);
+
+    try {
+      // Register the user with the API
+      const response = await authApi.register(
+        formData.name, 
+        formData.email, 
+        formData.password, 
+        formData.confirmPassword,
+        formData.role
+      );
+      
+      // Login the user with the returned data
+      login(response.user);
+      
+      toast({
+        title: "Account created successfully!",
+        description: "Welcome to Foodify!",
+      });
+      
+      // Redirect based on user role
+      if (formData.role === 'restaurant_owner') {
+        toast({
+          title: "Restaurant Owner Account Created",
+          description: "Now you can register your restaurant",
+        });
+        setLocation('/restaurant-register');
+      } else {
+        setLocation('/browse');
+      }
+    } catch (error) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "There was an error creating your account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -122,7 +134,7 @@ const Register = () => {
             <CardContent className="p-8">
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold font-sans text-gray-800 mb-2">Create Account</h1>
-                <p className="text-gray-600">Join Foodify and start ordering</p>
+                <p className="text-gray-600">Join Foodify and start ordering or register your restaurant</p>
               </div>
               
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -191,6 +203,25 @@ const Register = () => {
                       className="pl-10"
                     />
                   </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <Label>Account Type</Label>
+                  <RadioGroup 
+                    defaultValue="customer" 
+                    value={formData.role}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}
+                    className="flex flex-col space-y-1"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="customer" id="customer" />
+                      <Label htmlFor="customer" className="cursor-pointer">Customer</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="restaurant_owner" id="restaurant_owner" />
+                      <Label htmlFor="restaurant_owner" className="cursor-pointer">Restaurant Owner</Label>
+                    </div>
+                  </RadioGroup>
                 </div>
                 
                 <div>
@@ -262,9 +293,9 @@ const Register = () => {
                 <Button 
                   type="submit" 
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 font-semibold"
-                  disabled={registerMutation.isPending}
+                  disabled={isLoading}
                 >
-                  {registerMutation.isPending ? <LoadingSpinner size="sm" /> : 'Create Account'}
+                  {isLoading ? <LoadingSpinner size="sm" /> : 'Create Account'}
                 </Button>
               </form>
               

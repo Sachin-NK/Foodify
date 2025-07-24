@@ -55,7 +55,7 @@ const Chatbot = () => {
     setTimeout(() => {
       const userMessage = inputValue.toLowerCase();
       let botResponse = botResponses.default;
-      
+
       // Check for keywords in user message
       for (const [key, response] of Object.entries(botResponses)) {
         if (key !== 'default' && userMessage.includes(key)) {
@@ -88,7 +88,7 @@ const Chatbot = () => {
     // Simulate bot response
     setTimeout(() => {
       const botResponse = botResponses[reply.toLowerCase()] || botResponses.default;
-      
+
       const botMessage = {
         id: messages.length + 2,
         text: botResponse,
@@ -171,11 +171,10 @@ const Chatbot = () => {
                         className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-xs px-4 py-2 rounded-lg ${
-                            message.sender === 'user'
-                              ? 'bg-orange-500 text-white'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
+                          className={`max-w-xs px-4 py-2 rounded-lg ${message.sender === 'user'
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-gray-100 text-gray-800'
+                            }`}
                         >
                           <div className="flex items-center space-x-2 mb-1">
                             {message.sender === 'bot' ? (
