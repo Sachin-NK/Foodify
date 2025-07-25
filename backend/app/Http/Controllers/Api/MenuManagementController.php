@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 class MenuManagementController extends Controller
 {
     /**
-     * Get all menu items for owned restaurant
+     * Get all menu items for a restaurant
      */
     public function index(Request $request, $restaurantId)
     {
@@ -23,7 +23,7 @@ class MenuManagementController extends Controller
         if (!$restaurant) {
             return response()->json([
                 'success' => false,
-                'message' => 'Restaurant not found'
+                'message' => 'Restaurant not found or you do not have permission to access it'
             ], 404);
         }
 

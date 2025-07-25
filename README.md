@@ -27,24 +27,6 @@ A modern full-stack food ordering platform built with React and Laravel, featuri
 - **Data Seeding** - Pre-populated restaurants and menu items
 - **CORS Configuration** - Proper cross-origin resource sharing setup
 
-## 🛠️ Tech Stack
-
-### Frontend
-- **React 18** - Modern React with hooks
-- **Vite** - Fast build tool and development server
-- **Tailwind CSS** - Utility-first CSS framework
-- **Framer Motion** - Smooth animations and transitions
-- **React Query** - Server state management
-- **Wouter** - Lightweight routing
-- **Radix UI** - Accessible component primitives
-- **Lucide React** - Beautiful icons
-
-### Backend
-- **Laravel 10** - PHP web framework
-- **MySQL** - Relational database
-- **Eloquent ORM** - Database abstraction layer
-- **Laravel Sanctum** - API authentication
-- **CORS Middleware** - Cross-origin request handling
 
 ## 📁 Project Structure
 
@@ -324,20 +306,7 @@ SESSION_DOMAIN=your-domain.com
 SESSION_SECURE_COOKIES=true
 ```
 
-## 🎨 Theme Customization
 
-### Adding New Theme Colors
-1. Update CSS custom properties in `frontend/index.css`
-2. Add corresponding dark mode variants
-3. Ensure WCAG AA contrast compliance (4.5:1 minimum)
-
-### Custom Theme Components
-```jsx
-// Using theme-aware styling
-<div className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 theme-transition">
-  Content that adapts to theme
-</div>
-```
 
 ## 🔧 Troubleshooting
 
