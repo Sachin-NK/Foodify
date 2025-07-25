@@ -1,4 +1,7 @@
-import { API_BASE_URL } from '../config/api.js';
+// API Configuration
+const API_BASE_URL = import.meta.env.PROD 
+  ? import.meta.env.VITE_API_URL || 'https://your-backend-url.onrender.com/api'
+  : 'http://127.0.0.1:8000/api';
 
 let csrfToken = null;
 let csrfTokenPromise = null;

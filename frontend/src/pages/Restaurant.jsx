@@ -72,7 +72,7 @@ const Restaurant = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-900 theme-transition">
       {/* Restaurant Header */}
       <div className="relative h-64 overflow-hidden">
         <img
@@ -133,8 +133,8 @@ const Restaurant = () => {
           className="flex justify-between items-center mb-8"
         >
           <div>
-            <h2 className="text-3xl font-bold font-sans text-gray-800">Our Menu</h2>
-            <p className="text-gray-600 mt-2">
+            <h2 className="text-3xl font-bold font-sans text-gray-800 dark:text-gray-100 theme-transition">Our Menu</h2>
+            <p className="text-gray-600 dark:text-gray-300 theme-transition mt-2">
               {restaurant.tags?.join(', ')} cuisine
             </p>
             <div className="flex flex-wrap gap-2 mt-3">
@@ -179,10 +179,10 @@ const Restaurant = () => {
             animate={{ opacity: 1 }}
             className="text-center py-12"
           >
-            <Card className="max-w-md mx-auto">
+            <Card className="max-w-md mx-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
               <CardContent className="pt-6">
-                <p className="text-gray-500 text-lg">No menu items available at the moment.</p>
-                <p className="text-gray-400 text-sm mt-2">Please check back later.</p>
+                <p className="text-gray-500 dark:text-gray-400 theme-transition text-lg">No menu items available at the moment.</p>
+                <p className="text-gray-400 dark:text-gray-500 theme-transition text-sm mt-2">Please check back later.</p>
               </CardContent>
             </Card>
           </motion.div>

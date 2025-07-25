@@ -329,12 +329,29 @@
   --radius: 0.5rem;
 }
 
+/* Theme transition classes */
+.theme-transition {
+  transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease;
+}
+
+.theme-transition * {
+  transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .theme-transition,
+  .theme-transition * {
+    transition: none !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground theme-transition;
   }
 }

@@ -342,7 +342,7 @@ const RestaurantMenu = () => {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-8 px-4 min-h-screen bg-white dark:bg-gray-900 theme-transition">
       <div className="flex items-center mb-6">
         <Button 
           variant="ghost" 
@@ -352,7 +352,7 @@ const RestaurantMenu = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Dashboard
         </Button>
-        <h1 className="text-3xl font-bold">{restaurant?.name} - Menu Management</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 theme-transition">{restaurant?.name} - Menu Management</h1>
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
@@ -377,10 +377,10 @@ const RestaurantMenu = () => {
       </div>
 
       {filteredMenuItems.length === 0 ? (
-        <Card className="text-center py-12">
+        <Card className="text-center py-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
           <CardContent>
-            <h2 className="text-xl font-medium mb-2">No Menu Items Found</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-xl font-medium mb-2 text-gray-800 dark:text-gray-100 theme-transition">No Menu Items Found</h2>
+            <p className="text-gray-600 dark:text-gray-400 theme-transition mb-4">
               {selectedCategory === "all" 
                 ? "You haven't added any menu items yet." 
                 : `No items found in the "${selectedCategory}" category.`}
@@ -394,7 +394,7 @@ const RestaurantMenu = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredMenuItems.map(item => (
-            <Card key={item.id} className={!item.is_available ? "opacity-70" : ""}>
+            <Card key={item.id} className={`bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition ${!item.is_available ? "opacity-70" : ""}`}>
               <div className="relative">
                 {item.image ? (
                   <img 
@@ -435,12 +435,12 @@ const RestaurantMenu = () => {
               </div>
               <CardContent className="pt-4">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-lg">{item.name}</h3>
-                  <span className="font-bold text-green-600">${parseFloat(item.price).toFixed(2)}</span>
+                  <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 theme-transition">{item.name}</h3>
+                  <span className="font-bold text-green-600 dark:text-green-400 theme-transition">${parseFloat(item.price).toFixed(2)}</span>
                 </div>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 theme-transition text-sm mb-3 line-clamp-2">{item.description}</p>
                 <div className="flex items-center space-x-2 mb-3">
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">{item.category}</span>
+                  <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 theme-transition px-2 py-1 rounded-full">{item.category}</span>
                   {item.is_vegetarian && (
                     <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Vegetarian</span>
                   )}
@@ -451,7 +451,7 @@ const RestaurantMenu = () => {
               </CardContent>
               <CardFooter className="flex justify-between pt-0">
                 <div className="flex items-center">
-                  <span className="text-sm mr-2">Available</span>
+                  <span className="text-sm mr-2 text-gray-700 dark:text-gray-300 theme-transition">Available</span>
                   <Switch
                     checked={item.is_available}
                     onCheckedChange={() => handleToggleAvailability(item)}
