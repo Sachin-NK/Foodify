@@ -148,11 +148,11 @@ const RestaurantRegister = () => {
   // Show existing restaurants dashboard if user has restaurants
   if (!showRegistrationForm && existingRestaurants.length > 0) {
     return (
-      <div className="container mx-auto py-8 px-4 max-w-6xl">
+      <div className="container mx-auto py-8 px-4 max-w-6xl min-h-screen bg-white dark:bg-gray-900 theme-transition">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold">My Restaurants</h1>
-            <p className="text-gray-600">Manage your restaurants and menus</p>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 theme-transition">My Restaurants</h1>
+            <p className="text-gray-600 dark:text-gray-400 theme-transition">Manage your restaurants and menus</p>
           </div>
           <Button onClick={() => setShowRegistrationForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -162,7 +162,7 @@ const RestaurantRegister = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {existingRestaurants.map(restaurant => (
-            <Card key={restaurant.id} className="hover:shadow-lg transition-shadow">
+            <Card key={restaurant.id} className="hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
               <div className="relative">
                 {restaurant.cover_image ? (
                   <img 
@@ -200,20 +200,20 @@ const RestaurantRegister = () => {
                   ) : (
                     <Store className="h-8 w-8 text-gray-400 mr-2" />
                   )}
-                  <h3 className="font-bold text-lg">{restaurant.name}</h3>
+                  <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 theme-transition">{restaurant.name}</h3>
                 </div>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{restaurant.description}</p>
-                <div className="flex items-center text-sm text-gray-500 mb-2">
+                <p className="text-gray-600 dark:text-gray-400 theme-transition text-sm mb-3 line-clamp-2">{restaurant.description}</p>
+                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 theme-transition mb-2">
                   <span>{restaurant.location}</span>
                 </div>
                 <div className="flex flex-wrap gap-1 mb-3">
                   {restaurant.tags && restaurant.tags.slice(0, 3).map((tag, index) => (
-                    <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                    <span key={index} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 theme-transition px-2 py-1 rounded-full">
                       {tag}
                     </span>
                   ))}
                   {restaurant.tags && restaurant.tags.length > 3 && (
-                    <span className="text-xs text-gray-500">+{restaurant.tags.length - 3} more</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 theme-transition">+{restaurant.tags.length - 3} more</span>
                   )}
                 </div>
               </CardContent>
@@ -242,8 +242,8 @@ const RestaurantRegister = () => {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <Card>
+    <div className="container mx-auto py-8 px-4 max-w-4xl min-h-screen bg-white dark:bg-gray-900 theme-transition">
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>

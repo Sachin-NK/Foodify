@@ -71,14 +71,14 @@ const Browse = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white py-8">
+    <div className="min-h-screen bg-white dark:bg-gray-900 theme-transition py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row justify-between items-center mb-8"
         >
-          <h1 className="text-4xl font-bold font-sans text-gray-800 mb-4 md:mb-0">
+          <h1 className="text-4xl font-bold font-sans text-gray-800 dark:text-gray-100 theme-transition mb-4 md:mb-0">
             Browse Restaurants
           </h1>
           
@@ -101,16 +101,16 @@ const Browse = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gray-50 rounded-lg p-6 mb-8"
+          className="bg-gray-50 dark:bg-gray-800 theme-transition rounded-lg p-6 mb-8"
         >
           <div className="flex items-center mb-4">
-            <Filter className="h-5 w-5 mr-2" />
-            <h3 className="text-lg font-semibold font-sans">Filter by:</h3>
+            <Filter className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300 theme-transition" />
+            <h3 className="text-lg font-semibold font-sans text-gray-800 dark:text-gray-100 theme-transition">Filter by:</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 theme-transition mb-2">Category</label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Categories" />
@@ -132,7 +132,7 @@ const Browse = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 theme-transition mb-2">Rating</label>
               <Select value={ratingFilter} onValueChange={setRatingFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Ratings" />
@@ -147,7 +147,7 @@ const Browse = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Time</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 theme-transition mb-2">Delivery Time</label>
               <Select value={deliveryTimeFilter} onValueChange={setDeliveryTimeFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Times" />
@@ -203,9 +203,9 @@ const Browse = () => {
             animate={{ opacity: 1 }}
             className="text-center py-12"
           >
-            <Card className="max-w-md mx-auto">
+            <Card className="max-w-md mx-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
               <CardContent className="pt-6">
-                <p className="text-gray-500 text-lg">No restaurants found matching your criteria.</p>
+                <p className="text-gray-500 dark:text-gray-400 theme-transition text-lg">No restaurants found matching your criteria.</p>
                 <Button
                   onClick={() => {
                     setCategoryFilter('all');

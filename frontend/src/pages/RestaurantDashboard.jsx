@@ -209,12 +209,12 @@ const RestaurantDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-8 px-4 min-h-screen bg-white dark:bg-gray-900 theme-transition">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{restaurant?.name || 'Restaurant Dashboard'}</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 theme-transition">{restaurant?.name || 'Restaurant Dashboard'}</h1>
         <div className="flex items-center space-x-2">
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 theme-transition">
               {restaurant?.is_active ? 'Active' : 'Inactive'}
             </span>
             <Switch
@@ -247,7 +247,7 @@ const RestaurantDashboard = () => {
         
         <TabsContent value="overview">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="md:col-span-2">
+            <Card className="md:col-span-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Restaurant Information</CardTitle>
@@ -516,10 +516,10 @@ const RestaurantDashboard = () => {
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Manage your restaurant</CardDescription>
+                <CardTitle className="text-gray-800 dark:text-gray-100 theme-transition">Quick Actions</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400 theme-transition">Manage your restaurant</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button className="w-full" onClick={navigateToMenuManagement}>
@@ -535,9 +535,9 @@ const RestaurantDashboard = () => {
                 <Separator />
                 
                 <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Restaurant Status</h3>
+                  <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100 theme-transition">Restaurant Status</h3>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">
+                    <span className="text-sm text-gray-700 dark:text-gray-300 theme-transition">
                       {restaurant?.is_active ? 'Active' : 'Inactive'}
                     </span>
                     <Switch
@@ -545,7 +545,7 @@ const RestaurantDashboard = () => {
                       onCheckedChange={handleToggleStatus}
                     />
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 theme-transition">
                     {restaurant?.is_active 
                       ? 'Your restaurant is visible to customers' 
                       : 'Your restaurant is hidden from customers'}
@@ -566,16 +566,16 @@ const RestaurantDashboard = () => {
         </TabsContent>
         
         <TabsContent value="settings">
-          <Card>
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
             <CardHeader>
-              <CardTitle>Restaurant Settings</CardTitle>
-              <CardDescription>Manage your restaurant settings</CardDescription>
+              <CardTitle className="text-gray-800 dark:text-gray-100 theme-transition">Restaurant Settings</CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400 theme-transition">Manage your restaurant settings</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <h3 className="text-lg font-medium">Danger Zone</h3>
-                  <p className="text-gray-600">These actions cannot be undone</p>
+                  <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 theme-transition">Danger Zone</h3>
+                  <p className="text-gray-600 dark:text-gray-400 theme-transition">These actions cannot be undone</p>
                 </div>
                 
                 <Button variant="destructive" className="w-full sm:w-auto">
