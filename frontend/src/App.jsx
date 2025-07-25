@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "./context/CartContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { initializeCsrfToken } from "./lib/api";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
@@ -52,16 +53,18 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <CartProvider>
-            <div className="min-h-screen bg-gray-50">
-              <Navbar />
-              <Router />
-              <Chatbot />
-            </div>
-            <Toaster />
-          </CartProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <CartProvider>
+              <div className="min-h-screen bg-background text-foreground theme-transition">
+                <Navbar />
+                <Router />
+                <Chatbot />
+              </div>
+              <Toaster />
+            </CartProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

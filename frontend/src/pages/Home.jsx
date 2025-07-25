@@ -8,8 +8,8 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="hero-gradient min-h-screen flex items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
+      <section className="hero-gradient min-h-screen flex items-center justify-center relative overflow-hidden theme-transition">
+        <div className="absolute inset-0 opacity-20 dark:opacity-30">
           <img
             src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1920&h=1080&q=80"
             alt="Food collage"
@@ -51,7 +51,7 @@ const Home = () => {
             </Link>
             <Button
               variant="outline"
-              className="border-2 border-white text-black px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-orange-500 transition-colors button-bounce float-animation"
+              className="border-2 border-white text-gray-800 dark:text-yellow-100 dark:border-yellow-100 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-orange-500 dark:hover:bg-yellow-100 dark:hover:text-gray-900 transition-colors button-bounce float-animation shadow-lg dark:shadow-yellow-100/20 bg-white/90 dark:bg-transparent"
             >
               Become a Partner
             </Button>
@@ -60,13 +60,13 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-900 theme-transition">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-4xl font-bold text-center mb-12 font-sans text-gray-800"
+            className="text-4xl font-bold text-center mb-12 font-sans text-gray-800 dark:text-gray-100 theme-transition"
           >
             Why Choose Foodify?
           </motion.h2>
@@ -99,13 +99,13 @@ const Home = () => {
                 transition={{ duration: 0.6, delay: index * 0.2 }}
                 whileHover={{ scale: 1.05 }}
               >
-                <Card className="text-center card-hover p-6">
+                <Card className="text-center card-hover p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
                   <CardContent className="pt-6">
                     <div className={`w-16 h-16 ${feature.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
                       {feature.icon}
                     </div>
-                    <h3 className="text-xl font-semibold mb-2 font-sans">{feature.title}</h3>
-                    <p className="text-gray-600">{feature.description}</p>
+                    <h3 className="text-xl font-semibold mb-2 font-sans text-gray-800 dark:text-gray-100 theme-transition">{feature.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 theme-transition">{feature.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>

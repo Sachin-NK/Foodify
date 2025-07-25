@@ -25,7 +25,7 @@ const RestaurantCard = ({ restaurant }) => {
       whileHover={{ y: -4 }}
       style={{ pointerEvents: 'auto' }}
     >
-      <Card className="overflow-hidden restaurant-card" style={{ pointerEvents: 'auto' }}>
+      <Card className="overflow-hidden restaurant-card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition" style={{ pointerEvents: 'auto' }}>
         <div className="relative h-48">
           <img
             src={`https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&h=400&q=80`}
@@ -33,7 +33,7 @@ const RestaurantCard = ({ restaurant }) => {
             className="w-full h-full object-cover"
           />
           <div className="absolute top-4 right-4">
-            <Badge className="bg-white text-gray-800">
+            <Badge className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 theme-transition">
               <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
               {getRatingStars(restaurant.rating)}
             </Badge>
@@ -42,10 +42,10 @@ const RestaurantCard = ({ restaurant }) => {
         
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold font-sans">{restaurant.name}</h3>
+            <h3 className="text-xl font-semibold font-sans text-gray-800 dark:text-gray-100 theme-transition">{restaurant.name}</h3>
           </div>
           
-          <div className="flex items-center text-gray-600 text-sm mb-2">
+          <div className="flex items-center text-gray-600 dark:text-gray-400 theme-transition text-sm mb-2">
             <MapPin className="h-4 w-4 mr-1" />
             {restaurant.location}
           </div>
@@ -59,7 +59,7 @@ const RestaurantCard = ({ restaurant }) => {
           </div>
           
           <div className="flex items-center justify-between">
-            <div className="flex items-center text-gray-600 text-sm">
+            <div className="flex items-center text-gray-600 dark:text-gray-400 theme-transition text-sm">
               <Clock className="h-4 w-4 mr-1" />
               {restaurant.deliveryTime}
             </div>

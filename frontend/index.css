@@ -32,21 +32,21 @@
 }
 
 .dark {
-  --background: hsl(240, 10%, 3.9%);
+  --background: hsl(240, 10%, 2%);
   --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
+  --muted: hsl(240, 3.7%, 12%);
+  --muted-foreground: hsl(240, 5%, 70%);
+  --popover: hsl(240, 10%, 2%);
   --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
+  --card: hsl(240, 10%, 4%);
   --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
+  --border: hsl(240, 3.7%, 18%);
+  --input: hsl(240, 3.7%, 18%);
   --primary: hsl(207, 90%, 54%);
   --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary: hsl(240, 3.7%, 12%);
   --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(240, 3.7%, 15.9%);
+  --accent: hsl(240, 3.7%, 12%);
   --accent-foreground: hsl(0, 0%, 98%);
   --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(0, 0%, 98%);
@@ -62,11 +62,61 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+  
+  /* Theme transition classes for smooth theme switching with performance optimizations */
+  .theme-transition,
+  .theme-transition *,
+  .theme-transition *:before,
+  .theme-transition *:after {
+    transition: background-color 300ms ease-in-out,
+                border-color 300ms ease-in-out,
+                color 300ms ease-in-out,
+                fill 300ms ease-in-out,
+                stroke 300ms ease-in-out,
+                box-shadow 300ms ease-in-out !important;
+    /* Performance optimization: Use GPU acceleration for smooth transitions */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+  
+  /* Optimize theme switching performance */
+  .theme-switching {
+    will-change: background-color, color, border-color;
+  }
+  
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .theme-transition,
+    .theme-transition *,
+    .theme-transition *:before,
+    .theme-transition *:after {
+      transition: none !important;
+    }
+  }
+  
+  /* Screen reader only utility class */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 }
 
 @layer utilities {
   .hero-gradient {
     background: linear-gradient(135deg, var(--primary-orange) 0%, hsl(16, 100%, 65%) 100%);
+  }
+  
+  /* Dark mode hero gradient with better contrast */
+  .dark .hero-gradient {
+    background: linear-gradient(135deg, hsl(16, 100%, 50%) 0%, hsl(16, 100%, 55%) 100%);
   }
   
   .card-hover {
@@ -163,5 +213,116 @@
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+  }
+  
+  /* Theme toggle specific animations */
+  .theme-toggle-glow {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .theme-toggle-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.4), transparent);
+    transition: left 0.5s;
+  }
+  
+  .theme-toggle-glow:hover::before {
+    left: 100%;
+  }
+  
+  /* Enhanced button bounce for theme toggle with accessibility */
+  .theme-button-bounce {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .theme-button-bounce:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+  }
+  
+  .theme-button-bounce:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
+  }
+  
+  /* Focus styles for better accessibility */
+  .theme-button-bounce:focus-visible {
+    outline: 2px solid hsl(16, 100%, 60%);
+    outline-offset: 2px;
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .theme-button-bounce {
+      border: 2px solid currentColor;
+    }
+    
+    .dark {
+      --background: hsl(0, 0%, 0%);
+      --foreground: hsl(0, 0%, 100%);
+      --card: hsl(0, 0%, 10%);
+      --border: hsl(0, 0%, 30%);
+    }
+  }
+  
+  /* Color contrast optimizations for WCAG AA compliance */
+  .dark .text-gray-600 {
+    color: hsl(240, 5%, 75%);
+  }
+  
+  .dark .text-gray-700 {
+    color: hsl(240, 5%, 80%);
+  }
+  
+  .dark .text-gray-800 {
+    color: hsl(240, 5%, 85%);
+  }
+  
+  /* Ensure proper contrast for interactive elements */
+  .dark button:not(.bg-orange-500):not(.bg-white) {
+    background-color: hsl(240, 3.7%, 15%);
+    color: hsl(0, 0%, 95%);
+    border-color: hsl(240, 3.7%, 25%);
+  }
+  
+  .dark button:not(.bg-orange-500):not(.bg-white):hover {
+    background-color: hsl(240, 3.7%, 20%);
+    border-color: hsl(240, 3.7%, 30%);
+  }
+  
+  /* Improve button focus states for accessibility */
+  button:focus-visible {
+    outline: 2px solid hsl(16, 100%, 60%);
+    outline-offset: 2px;
+  }
+  
+  .dark button:focus-visible {
+    outline-color: hsl(16, 100%, 70%);
+  }
+  
+  /* Better link contrast in dark mode */
+  .dark a:not(.text-orange-500) {
+    color: hsl(0, 0%, 90%);
+  }
+  
+  .dark a:not(.text-orange-500):hover {
+    color: hsl(16, 100%, 70%);
+  }
+  
+  /* Improve card contrast in dark mode */
+  .dark .card-hover {
+    background-color: hsl(240, 3.7%, 8%);
+    border-color: hsl(240, 3.7%, 18%);
+  }
+  
+  .dark .card-hover:hover {
+    background-color: hsl(240, 3.7%, 12%);
+    border-color: hsl(240, 3.7%, 22%);
   }
 }
