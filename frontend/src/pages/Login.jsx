@@ -49,29 +49,23 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // Import authApi from the API client
-      const { authApi } = await import('../lib/api');
+      // Use the AuthContext login function which handles everything
+      const result = await login(formData.email, formData.password);
       
-      // Call the real authentication API
-      const response = await authApi.login(formData.email, formData.password);
-      
-      // Extract user data from response
-      const userData = response.user;
-      
-      // Store auth token if provided
-      if (response.token) {
-        localStorage.setItem('auth_token', response.token);
+      if (result.success) {
+        toast({
+          title: "Login successful!",
+          description: `Welcome back, ${result.user.name}!`,
+        });
+        
+        setLocation('/browse');
+      } else {
+        toast({
+          title: "Login failed",
+          description: result.error || "Invalid email or password. Please try again.",
+          variant: "destructive",
+        });
       }
-
-      // Login user with real data from backend
-      login(userData);
-      
-      toast({
-        title: "Login successful!",
-        description: `Welcome back, ${userData.name}!`,
-      });
-      
-      setLocation('/browse');
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -85,7 +79,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 theme-transition flex items-center justify-center py-8">
       <div className="max-w-md w-full mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -95,8 +89,8 @@ const Login = () => {
           <Card className="shadow-lg">
             <CardContent className="p-8">
               <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold font-sans text-gray-800 mb-2">Welcome Back</h1>
-                <p className="text-gray-600">Sign in to your Foodify account</p>
+                <h1 className="text-3xl font-bold font-sans text-gray-800 dark:text-gray-100 theme-transition mb-2">Welcome Back</h1>
+                <p className="text-gray-600 dark:text-gray-300 theme-transition">Sign in to your Foodify account</p>
               </div>
               
               <form onSubmit={handleSubmit} className="space-y-6">

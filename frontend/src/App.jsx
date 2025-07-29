@@ -6,7 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "./context/CartContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
-import { initializeCsrfToken } from "./lib/api";
+import { ChatProvider } from "./context/ChatContext.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
+// CSRF token initialization removed as per requirements
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Browse from "@/pages/Browse";
@@ -20,9 +22,10 @@ import Admin from "@/pages/Admin";
 import RestaurantRegister from "@/pages/RestaurantRegister";
 import RestaurantDashboard from "@/pages/RestaurantDashboard";
 import RestaurantMenu from "@/pages/RestaurantMenu";
+// Debug pages removed
 import Navbar from "@/components/Navbar";
 import Chatbot from "@/components/Chatbot.jsx";
-import { useEffect } from "react";
+// useEffect import removed since CSRF initialization is no longer needed
 
 function Router() {
   return (
@@ -39,34 +42,36 @@ function Router() {
       <Route path="/restaurant-register" component={RestaurantRegister} />
       <Route path="/restaurant-dashboard/:id" component={RestaurantDashboard} />
       <Route path="/restaurant-menu/:restaurantId" component={RestaurantMenu} />
+      {/* Debug routes removed */}
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function App() {
-  useEffect(() => {
-    // Initialize CSRF token when app loads
-    initializeCsrfToken();
-  }, []);
+  // CSRF token initialization removed as per requirements
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <ThemeProvider>
-          <AuthProvider>
-            <CartProvider>
-              <div className="min-h-screen bg-background text-foreground theme-transition">
-                <Navbar />
-                <Router />
-                <Chatbot />
-              </div>
-              <Toaster />
-            </CartProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <CartProvider>
+                <ChatProvider>
+                  <div className="min-h-screen bg-background text-foreground theme-transition">
+                    <Navbar />
+                    <Router />
+                    <Chatbot />
+                  </div>
+                  <Toaster />
+                </ChatProvider>
+              </CartProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

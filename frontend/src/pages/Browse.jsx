@@ -7,6 +7,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import RestaurantCard from '@/components/RestaurantCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import LoadingState, { RestaurantGridSkeleton } from '@/components/LoadingState';
+import ApiErrorDisplay from '@/components/ApiErrorDisplay';
+import { useApiError } from '@/hooks/useApiError';
 import { restaurantApi } from '@/lib/api';
 
 const Browse = () => {
@@ -16,7 +19,7 @@ const Browse = () => {
   const [deliveryTimeFilter, setDeliveryTimeFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [restaurants, setRestaurants] = useState([]);
-  const [error, setError] = useState(null);
+  const { error, isRetrying, handleError, clearError, retry } = useApiError();
   
   // Fetch restaurants from Laravel API
   useEffect(() => {
@@ -26,6 +29,7 @@ const Browse = () => {
   const fetchRestaurants = async () => {
     try {
       setIsLoading(true);
+      clearError();
       const params = {};
       
       if (searchQuery) params.search = searchQuery;
@@ -35,9 +39,8 @@ const Browse = () => {
       
       const data = await restaurantApi.getAll(params);
       setRestaurants(data);
-      setError(null);
     } catch (err) {
-      setError(err.message);
+      handleError(err);
       setRestaurants([]);
     } finally {
       setIsLoading(false);
@@ -46,26 +49,39 @@ const Browse = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className="min-h-screen bg-white dark:bg-gray-900 theme-transition py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col md:flex-row justify-between items-center mb-8"
+          >
+            <h1 className="text-4xl font-bold font-sans text-gray-800 dark:text-gray-100 theme-transition mb-4 md:mb-0">
+              Browse Restaurants
+            </h1>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <RestaurantGridSkeleton count={9} />
+          </motion.div>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && !isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="p-8 text-center">
-          <CardContent>
-            <p className="text-red-500 text-lg">Failed to load restaurants. Please try again later.</p>
-            <Button 
-              onClick={fetchRestaurants}
-              className="mt-4 bg-orange-500 hover:bg-orange-600"
-            >
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 theme-transition">
+        <ApiErrorDisplay 
+          error={error}
+          onRetry={() => retry(fetchRestaurants)}
+          isRetrying={isRetrying}
+          className="max-w-md mx-auto"
+        />
       </div>
     );
   }

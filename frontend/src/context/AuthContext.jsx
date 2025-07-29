@@ -1,18 +1,46 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { authApi } from '@/lib/api';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Load user from localStorage on mount
+  // Load user from localStorage on mount and verify token
   useEffect(() => {
-    const savedUser = localStorage.getItem('foodify-user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    const initializeAuth = async () => {
+      try {
+        const savedUser = localStorage.getItem('foodify-user');
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          
+          // Verify token is still valid by fetching user data
+          if (userData.token) {
+            try {
+              const currentUser = await authApi.getUser();
+              setUser({ ...currentUser.user, token: userData.token });
+            } catch (error) {
+              // Token is invalid, clear stored data
+              console.warn('Stored token is invalid, clearing auth data:', error.message);
+              localStorage.removeItem('foodify-user');
+              setUser(null);
+            }
+          } else {
+            setUser(userData);
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        // Don't set error state for initialization failures, just log them
+        console.warn('Authentication initialization failed, continuing without auth');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   // Save user to localStorage whenever it changes
@@ -24,18 +52,66 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
-  const login = (userData) => {
-    setUser(userData);
+  const login = async (email, password) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await authApi.login(email, password);
+      const userData = { ...response.user, token: response.token };
+      setUser(userData);
+      
+      // Trigger a custom event to notify other components about login
+      window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: userData }));
+      
+      return { success: true, user: userData };
+    } catch (error) {
+      setError(error.message);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('foodify-user');
-    localStorage.removeItem('foodify-cart');
+  const register = async (name, email, password, passwordConfirmation, role = 'customer') => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await authApi.register(name, email, password, passwordConfirmation, role);
+      const userData = { ...response.user, token: response.token };
+      
+      setUser(userData);
+      return { success: true, user: userData };
+    } catch (error) {
+      setError(error.message);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      if (user?.token) {
+        await authApi.logout();
+      }
+    } catch (error) {
+      console.warn('Logout API call failed:', error.message);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('foodify-user');
+      localStorage.removeItem('foodify-cart');
+      setError(null);
+    }
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   const isAuthenticated = () => {
-    return user !== null;
+    return user !== null && user.token;
   };
 
   const isAdmin = () => {
@@ -50,11 +126,14 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       user,
       login,
+      register,
       logout,
       isAuthenticated,
       isAdmin,
       isRestaurantOwner,
-      loading
+      loading,
+      error,
+      clearError
     }}>
       {children}
     </AuthContext.Provider>

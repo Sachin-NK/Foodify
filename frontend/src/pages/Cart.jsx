@@ -43,7 +43,7 @@ const Cart = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-white py-8">
+      <div className="min-h-screen bg-white dark:bg-gray-900 theme-transition py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <motion.div
@@ -51,9 +51,9 @@ const Cart = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="mb-8"
             >
-              <ShoppingBag className="h-24 w-24 mx-auto text-gray-300 mb-4" />
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Your Cart is Empty</h1>
-              <p className="text-gray-600">Add some delicious food to get started!</p>
+              <ShoppingBag className="h-24 w-24 mx-auto text-gray-300 dark:text-gray-600 theme-transition mb-4" />
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 theme-transition mb-2">Your Cart is Empty</h1>
+              <p className="text-gray-600 dark:text-gray-300 theme-transition">Add some delicious food to get started!</p>
             </motion.div>
             
             <Link href="/browse">
@@ -68,16 +68,16 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white py-8">
+    <div className="min-h-screen bg-white dark:bg-gray-900 theme-transition py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex justify-between items-center mb-8"
         >
-          <h1 className="text-4xl font-bold font-sans text-gray-800">Your Cart</h1>
+          <h1 className="text-4xl font-bold font-sans text-gray-800 dark:text-gray-100 theme-transition">Your Cart</h1>
           <Link href="/browse">
-            <Button variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200 button-bounce interactive-bounce">
+            <Button variant="outline" className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 theme-transition button-bounce interactive-bounce">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Continue Shopping
             </Button>
@@ -111,7 +111,7 @@ const Cart = () => {
           </CardContent>
           
           {/* Cart Summary */}
-          <div className="bg-gray-50 p-6 border-t">
+          <div className="bg-gray-50 dark:bg-gray-800 theme-transition p-6 border-t border-gray-200 dark:border-gray-700">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

@@ -193,22 +193,28 @@ export const CartProvider = ({ children }) => {
     fetchCart();
 
     const handleOnline = () => {
-      console.log('Network connection restored');
+      // Network connection restored
       dispatch({ type: 'CLEAR_ERROR' });
       fetchCart();
     };
 
     const handleOffline = () => {
-      console.log('Network connection lost');
+      // Network connection lost
       dispatch({ type: 'SET_ERROR', payload: 'You are offline. Cart changes will be saved locally.' });
+    };
+
+    const handleUserLoggedIn = (event) => {
+      fetchCart();
     };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('userLoggedIn', handleUserLoggedIn);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('userLoggedIn', handleUserLoggedIn);
     };
   }, []);
 
@@ -219,7 +225,7 @@ export const CartProvider = ({ children }) => {
       
       if (cartData && typeof cartData === 'object') {
         dispatch({ type: 'SET_CART', payload: cartData });
-        console.log('Cart fetched successfully:', cartData);
+        // Cart fetched successfully
       } else {
         console.warn('Invalid cart data received:', cartData);
         dispatch({ type: 'SET_CART', payload: { cart_items: [], subtotal: 0, delivery_fee: 0, total: 0 } });
@@ -229,17 +235,17 @@ export const CartProvider = ({ children }) => {
       
       if (retryCount < 2 && navigator.onLine) {
         const delay = Math.pow(2, retryCount) * 1000;
-        console.log(`Retrying cart fetch in ${delay}ms (attempt ${retryCount + 1})`);
+        // Retrying cart fetch with exponential backoff
         setTimeout(() => fetchCart(retryCount + 1), delay);
         return;
       }
       
       const storedCart = loadCartFromStorage();
       if (storedCart && storedCart.items && storedCart.items.length > 0) {
-        console.log('Loading cart from local storage:', storedCart);
+        // Loading cart from local storage
         dispatch({ type: 'LOAD_FROM_STORAGE', payload: storedCart });
       } else {
-        console.log('Starting with empty cart');
+        // Starting with empty cart
         dispatch({ type: 'SET_CART', payload: { cart_items: [], subtotal: 0, delivery_fee: 0, total: 0 } });
       }
       
@@ -253,6 +259,19 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (menuItemId, quantity = 1, specialInstructions = '', itemData = null, retryCount = 0) => {
     dispatch({ type: 'CLEAR_ERROR' });
+    
+    // Validate inputs
+    if (!menuItemId || quantity <= 0 || quantity > 99) {
+      const error = 'Invalid quantity. Please select between 1 and 99 items.';
+      dispatch({ type: 'SET_ERROR', payload: error });
+      throw new Error(error);
+    }
+    
+    if (specialInstructions && specialInstructions.length > 255) {
+      const error = 'Special instructions are too long (maximum 255 characters).';
+      dispatch({ type: 'SET_ERROR', payload: error });
+      throw new Error(error);
+    }
     
     if (state.items.length > 0 && itemData && state.restaurantId && itemData.restaurant_id !== state.restaurantId) {
       const error = 'Cannot add items from different restaurants to the same cart.';
@@ -279,7 +298,7 @@ export const CartProvider = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const result = await cartApi.addItem(menuItemId, quantity, specialInstructions);
-      console.log('Item added to cart successfully:', result);
+      // Item added to cart successfully
       await fetchCart();
       return result;
     } catch (error) {
@@ -287,7 +306,7 @@ export const CartProvider = ({ children }) => {
       
       if (retryCount < 2 && navigator.onLine && (error.message.includes('network') || error.message.includes('fetch'))) {
         const delay = Math.pow(2, retryCount) * 1000;
-        console.log(`Retrying add to cart in ${delay}ms (attempt ${retryCount + 1})`);
+        // Retrying add to cart with exponential backoff
         setTimeout(() => addToCart(menuItemId, quantity, specialInstructions, itemData, retryCount + 1), delay);
         return;
       }
@@ -335,11 +354,20 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = async (itemId, quantity) => {
+    // Validate quantity
+    if (quantity < 0 || quantity > 99) {
+      const error = 'Invalid quantity. Please select between 0 and 99 items.';
+      dispatch({ type: 'SET_ERROR', payload: error });
+      throw new Error(error);
+    }
+    
     // Find the item to get the menu_item_id for backend API
     const item = state.items.find(item => item.id === itemId);
     if (!item) {
       console.error('Item not found in cart:', itemId);
-      return;
+      const error = 'Item not found in cart.';
+      dispatch({ type: 'SET_ERROR', payload: error });
+      throw new Error(error);
     }
 
     // Optimistic update - update quantity immediately
@@ -378,7 +406,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const syncWithBackend = async () => {
-    console.log('Syncing cart with backend...');
+    // Syncing cart with backend
     await fetchCart();
   };
 

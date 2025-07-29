@@ -19,7 +19,7 @@ Route::get('/restaurants', [RestaurantController::class, 'index']);
 Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
 Route::get('/restaurants/{id}/menu', [RestaurantController::class, 'menu']);
 
-Route::middleware(['web'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/cart', [CartController::class, 'index']);
     Route::post('/cart', [CartController::class, 'store']);
     Route::put('/cart/{itemId}', [CartController::class, 'update']);
@@ -28,7 +28,7 @@ Route::middleware(['web'])->group(function () {
     Route::get('/cart/count', [CartController::class, 'count']);
 });
 
-Route::middleware(['web'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
     Route::get('/orders/{orderNumber}/track', [OrderController::class, 'track']);

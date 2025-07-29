@@ -123,7 +123,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 theme-transition flex items-center justify-center py-8">
       <div className="max-w-md w-full mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -133,8 +133,8 @@ const Register = () => {
           <Card className="shadow-lg">
             <CardContent className="p-8">
               <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold font-sans text-gray-800 mb-2">Create Account</h1>
-                <p className="text-gray-600">Join Foodify and start ordering or register your restaurant</p>
+                <h1 className="text-3xl font-bold font-sans text-gray-800 dark:text-gray-100 theme-transition mb-2">Create Account</h1>
+                <p className="text-gray-600 dark:text-gray-300 theme-transition">Join Foodify and start ordering or register your restaurant</p>
               </div>
               
               <form onSubmit={handleSubmit} className="space-y-6">
