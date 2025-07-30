@@ -67,8 +67,6 @@ FoodOrderPlatform/
 │   ├── routes/
 │   │   └── api.php          # API routes
 │   └── ...
-├── .kiro/                   # Kiro IDE specifications
-│   └── specs/               # Feature specifications
 ├── package.json             # Frontend dependencies
 ├── vite.config.js          # Vite configuration
 ├── tailwind.config.js      # Tailwind configuration
