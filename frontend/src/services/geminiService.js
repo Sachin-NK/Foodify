@@ -15,6 +15,15 @@ const RATE_LIMIT = {
   requestCount: { minute: 0, hour: 0 }
 };
 
+// Circuit breaker for handling overload situations
+const CIRCUIT_BREAKER = {
+  failureCount: 0,
+  maxFailures: 5, // Allow more failures before opening
+  resetTimeout: 30000, // 30 seconds instead of 1 minute
+  lastFailureTime: 0,
+  state: 'CLOSED' // CLOSED, OPEN, HALF_OPEN
+};
+
 // Error types for better error handling
 export const ERROR_TYPES = {
   NETWORK_ERROR: 'NETWORK_ERROR',
@@ -74,6 +83,59 @@ const updateRateLimit = () => {
 };
 
 /**
+ * Checks circuit breaker state
+ * @returns {boolean} - True if requests should be allowed
+ */
+const checkCircuitBreaker = () => {
+  const now = Date.now();
+
+  if (CIRCUIT_BREAKER.state === 'OPEN') {
+    if (now - CIRCUIT_BREAKER.lastFailureTime > CIRCUIT_BREAKER.resetTimeout) {
+      CIRCUIT_BREAKER.state = 'HALF_OPEN';
+      console.log('Circuit breaker moving to HALF_OPEN state');
+      return true;
+    }
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * Records a successful request for circuit breaker
+ */
+const recordSuccess = () => {
+  if (CIRCUIT_BREAKER.state === 'HALF_OPEN') {
+    CIRCUIT_BREAKER.state = 'CLOSED';
+    CIRCUIT_BREAKER.failureCount = 0;
+    console.log('Circuit breaker reset to CLOSED state');
+  }
+};
+
+/**
+ * Records a failure for circuit breaker
+ * @param {Object} error - Error object
+ */
+const recordFailure = (error) => {
+  // Only count overload errors for circuit breaker
+  const isOverloadError = error.details && error.details.error &&
+    (error.details.error.code === 503 ||
+      (error.details.error.status === 'UNAVAILABLE' &&
+        error.details.error.message &&
+        error.details.error.message.toLowerCase().includes('overloaded')));
+
+  if (isOverloadError) {
+    CIRCUIT_BREAKER.failureCount++;
+    CIRCUIT_BREAKER.lastFailureTime = Date.now();
+
+    if (CIRCUIT_BREAKER.failureCount >= CIRCUIT_BREAKER.maxFailures) {
+      CIRCUIT_BREAKER.state = 'OPEN';
+      console.log(`Circuit breaker OPEN after ${CIRCUIT_BREAKER.failureCount} overload failures`);
+    }
+  }
+};
+
+/**
  * Creates a system prompt based on platform context
  * @param {Object} platformContext - Current platform context
  * @returns {string} - System prompt for Gemini
@@ -121,13 +183,13 @@ Current context:`;
 };
 
 /**
- * Retry mechanism with exponential backoff
+ * Retry mechanism with exponential backoff and smart overload handling
  * @param {Function} fn - Function to retry
  * @param {number} maxRetries - Maximum number of retries
  * @param {number} baseDelay - Base delay in milliseconds
  * @returns {Promise} - Promise that resolves with the function result
  */
-const retryWithBackoff = async (fn, maxRetries = 3, baseDelay = 1000) => {
+const retryWithBackoff = async (fn, maxRetries = 3, baseDelay = 800) => {
   let lastError;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -137,16 +199,65 @@ const retryWithBackoff = async (fn, maxRetries = 3, baseDelay = 1000) => {
       lastError = error;
 
       if (attempt === maxRetries) {
+        console.error(`Final retry attempt failed after ${maxRetries} retries:`, error);
         throw error;
       }
 
       // Don't retry on certain error types
-      if (error.type === ERROR_TYPES.VALIDATION_ERROR || error.type === ERROR_TYPES.RATE_LIMIT_ERROR) {
+      if (error.type === ERROR_TYPES.VALIDATION_ERROR) {
         throw error;
       }
 
-      // Exponential backoff
-      const delay = baseDelay * Math.pow(2, attempt);
+      // Check for specific API error codes that should be retried
+      const isOverloadError = error.details && error.details.error &&
+        (error.details.error.code === 503 ||
+          (error.details.error.status === 'UNAVAILABLE' &&
+            error.details.error.message &&
+            error.details.error.message.toLowerCase().includes('overloaded')));
+
+      const isRateLimitError = error.details && error.details.error && error.details.error.code === 429;
+      const isServerError = error.details && error.details.error && error.details.error.code >= 500;
+
+      const shouldRetry = isOverloadError || isRateLimitError || isServerError;
+
+      if (!shouldRetry && error.type === ERROR_TYPES.RATE_LIMIT_ERROR) {
+        throw error;
+      }
+
+      if (!shouldRetry) {
+        console.log('Error not retryable:', error);
+        throw error;
+      }
+
+      // For first attempt with overload error, try a quick retry
+      if (attempt === 0 && isOverloadError) {
+        console.log('Quick retry for overload error (attempt 1)');
+        await new Promise(resolve => setTimeout(resolve, 500)); // Just 500ms delay
+        continue;
+      }
+
+      // Optimized backoff strategy for faster responses
+      let delay;
+      if (isOverloadError) {
+        // For overload errors, use shorter delays but still with jitter
+        const jitter = Math.random() * 800; // Less randomness
+        delay = (baseDelay * Math.pow(1.8, attempt)) + jitter; // Faster growth
+        console.log(`Model overloaded - retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
+      } else if (isRateLimitError) {
+        // For rate limit errors, use moderate backoff
+        const jitter = Math.random() * 600;
+        delay = (baseDelay * Math.pow(2, attempt)) + jitter;
+        console.log(`Rate limited - retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
+      } else {
+        // For other server errors, use quick backoff
+        const jitter = Math.random() * 500;
+        delay = (baseDelay * Math.pow(1.5, attempt)) + jitter;
+        console.log(`Server error - retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
+      }
+
+      // Cap maximum delay at 8 seconds for better UX
+      delay = Math.min(delay, 8000);
+
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -172,6 +283,7 @@ class GeminiService {
    * @returns {Promise<string>} - AI response
    */
   async sendMessage(message, platformContext = {}, sessionId = 'default') {
+    const startTime = Date.now();
     try {
       // Validate input
       if (!message || typeof message !== 'string') {
@@ -198,17 +310,44 @@ class GeminiService {
         };
       }
 
+      // Check circuit breaker
+      if (!checkCircuitBreaker()) {
+        throw {
+          type: ERROR_TYPES.API_ERROR,
+          message: 'Service temporarily unavailable due to overload. Please try again in a minute.',
+          details: { error: { code: 503, status: 'CIRCUIT_BREAKER_OPEN' } }
+        };
+      }
+
       // Generate response with retry mechanism
       const response = await retryWithBackoff(async () => {
         return await this.generateResponse(sanitizedMessage, platformContext, sessionId);
       });
 
+      // Record success for circuit breaker
+      recordSuccess();
+
       // Update rate limit counters
       updateRateLimit();
 
+      const responseTime = Date.now() - startTime;
+      console.log(`✅ Gemini API response received in ${responseTime}ms`);
+
       return response;
     } catch (error) {
-      console.error('Gemini API Error:', error);
+      console.error('Gemini API Error Details:', {
+        type: error.type,
+        message: error.message,
+        details: error.details,
+        stack: error.stack
+      });
+
+      // Record failure for circuit breaker
+      recordFailure(error);
+
+      const responseTime = Date.now() - startTime;
+      console.log(`❌ Gemini API failed after ${responseTime}ms`);
+
       return this.getFallbackResponse(error);
     }
   }
@@ -267,26 +406,59 @@ class GeminiService {
       ]
     };
 
-    const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody)
+    console.log('Making Gemini API request to:', this.apiUrl);
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 second timeout
     });
+
+    // Race between fetch and timeout
+    const response = await Promise.race([
+      fetch(`${this.apiUrl}?key=${this.apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      }),
+      timeoutPromise
+    ]);
+
+    console.log('Gemini API response status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('Gemini API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData
+      });
+
+      // Enhanced error detection for overload situations
+      const isOverloadError = response.status === 503 ||
+        (errorData.error &&
+          (errorData.error.message?.toLowerCase().includes('overloaded') ||
+            errorData.error.message?.toLowerCase().includes('unavailable') ||
+            errorData.error.status === 'UNAVAILABLE'));
+
+      if (isOverloadError) {
+        console.log('Detected model overload error, will retry with backoff');
+      }
+
       throw {
         type: ERROR_TYPES.API_ERROR,
-        message: `API request failed: ${response.status}`,
-        details: errorData
+        message: `API request failed: ${response.status} ${response.statusText}`,
+        details: { error: { code: response.status, status: response.statusText, ...errorData.error } }
       };
     }
 
     const data = await response.json();
+    console.log('Gemini API response data:', data);
 
     if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+      console.error('Invalid Gemini API response format:', data);
       throw {
         type: ERROR_TYPES.API_ERROR,
         message: 'Invalid response format from Gemini API'
@@ -344,12 +516,46 @@ class GeminiService {
    * @returns {string} - Fallback response
    */
   getFallbackResponse(error) {
+    console.log('Generating fallback response for error:', error);
+
+    // Check for specific API error codes
+    if (error.details && error.details.error) {
+      const apiError = error.details.error;
+
+      // Handle model overload specifically with more helpful messages
+      if (apiError.code === 503 ||
+        (apiError.status === 'UNAVAILABLE') ||
+        (apiError.message && apiError.message.toLowerCase().includes('overloaded'))) {
+        return "I'm experiencing high demand right now! The AI service is temporarily overloaded. Please try your question again in a few seconds - I'll be right back to help you with your food delivery needs!";
+      }
+
+      // Handle quota exceeded
+      if (apiError.code === 429) {
+        return "I've reached my usage limit for now. Please try again in a few minutes, and I'll be happy to help you find great food options!";
+      }
+
+      // Handle bad request errors
+      if (apiError.code === 400) {
+        return "I had trouble understanding your request. Could you please rephrase your question? I'm here to help with restaurants, orders, and food delivery!";
+      }
+
+      // Handle authentication errors
+      if (apiError.code === 401 || apiError.code === 403) {
+        return "I'm having authentication issues with my AI service. Please try again in a moment, or contact support if this continues.";
+      }
+
+      // Handle circuit breaker open state
+      if (apiError.status === 'CIRCUIT_BREAKER_OPEN') {
+        return "I'm temporarily pausing requests due to service overload. Please try again in 30 seconds - I'll be back to help you soon!";
+      }
+    }
+
     const fallbackResponses = {
       [ERROR_TYPES.NETWORK_ERROR]: "I'm having trouble connecting right now. Please check your internet connection and try again.",
-      [ERROR_TYPES.API_ERROR]: "I'm experiencing some technical difficulties. Please try again in a moment.",
+      [ERROR_TYPES.API_ERROR]: "I'm experiencing some technical difficulties. Please try asking your question again in a few seconds.",
       [ERROR_TYPES.RATE_LIMIT_ERROR]: "I'm receiving too many requests right now. Please wait a moment before trying again.",
       [ERROR_TYPES.VALIDATION_ERROR]: "I didn't understand that message. Could you please rephrase your question?",
-      default: "I'm sorry, I'm having trouble processing your request right now. You can contact our support team at support@foodify.com for immediate assistance."
+      default: "I'm sorry, I'm having trouble processing your request right now. Please try again in a moment, or contact our support team at support@foodify.com for immediate assistance."
     };
 
     return fallbackResponses[error.type] || fallbackResponses.default;
@@ -367,6 +573,31 @@ class GeminiService {
       maxPerHour: RATE_LIMIT.maxRequestsPerHour,
       canMakeRequest: checkRateLimit()
     };
+  }
+
+  /**
+   * Gets current circuit breaker status
+   * @returns {Object} - Circuit breaker information
+   */
+  getCircuitBreakerStatus() {
+    return {
+      state: CIRCUIT_BREAKER.state,
+      failureCount: CIRCUIT_BREAKER.failureCount,
+      maxFailures: CIRCUIT_BREAKER.maxFailures,
+      lastFailureTime: CIRCUIT_BREAKER.lastFailureTime,
+      resetTimeout: CIRCUIT_BREAKER.resetTimeout,
+      canMakeRequest: checkCircuitBreaker()
+    };
+  }
+
+  /**
+   * Manually resets the circuit breaker (for testing/admin purposes)
+   */
+  resetCircuitBreaker() {
+    CIRCUIT_BREAKER.state = 'CLOSED';
+    CIRCUIT_BREAKER.failureCount = 0;
+    CIRCUIT_BREAKER.lastFailureTime = 0;
+    console.log('Circuit breaker manually reset');
   }
 }
 
