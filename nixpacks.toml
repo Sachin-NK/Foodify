@@ -1,0 +1,5 @@
+[build]
+nixPackages = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "composer"]
+
+[deploy]
+startCommand = "cd backend && composer install --no-dev && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
