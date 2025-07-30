@@ -24,6 +24,6 @@
   "outputDirectory": "dist/public",
   "installCommand": "npm install",
   "env": {
-    "VITE_API_URL": "https://foodify-backend.railway.app/api"
+    "VITE_API_URL": "https://foodify-production.up.railway.app/api"
   }
 }
