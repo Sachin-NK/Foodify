@@ -2,6 +2,8 @@
 
 A modern full-stack food ordering platform built with React and Laravel, featuring a modern UI, real-time cart management, and seamless order processing.
 
+**Live Demo**: [https://foodify-f30o0p7xb-sachin-nks-projects.vercel.app/](https://foodify-f30o0p7xb-sachin-nks-projects.vercel.app/)
+
 ## ✨ Features
 
 ### 🎨 Frontend (React)
