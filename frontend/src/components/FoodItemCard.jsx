@@ -6,6 +6,8 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
+import { getConsistentFoodImage } from '../utils/foodImages';
+import ImageWithFallback from './ImageWithFallback';
 
 const FoodItemCard = ({ item, restaurant }) => {
   const { addToCart } = useCart();
@@ -42,7 +44,7 @@ const FoodItemCard = ({ item, restaurant }) => {
         price: item.price,
         restaurant_id: restaurant?.id,
         restaurant_name: restaurant?.name,
-        image_url: item.image_url || `https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&fit=crop&w=800&h=400&q=80`
+        image_url: item.image_url || getConsistentFoodImage(item.name, item.category || restaurant?.cuisine)
       };
       
       await addToCart(item.id, 1, '', itemData);
@@ -71,12 +73,28 @@ const FoodItemCard = ({ item, restaurant }) => {
       whileHover={{ scale: 1.02 }}
     >
       <Card className="overflow-hidden food-card">
-        <div className="relative h-48">
-          <img
-            src={`https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&fit=crop&w=800&h=400&q=80`}
+        <div className="relative h-48 overflow-hidden">
+          <ImageWithFallback
+            src={item.image_url || getConsistentFoodImage(item.name, item.category || restaurant?.cuisine)}
+            fallbackSrc={getConsistentFoodImage('default food', 'default')}
             alt={item.name}
-            className="w-full h-full object-cover"
+            className="transition-transform duration-300 hover:scale-105"
           />
+          {item.is_popular && (
+            <div className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold z-10">
+              Popular
+            </div>
+          )}
+          {item.is_vegetarian && (
+            <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold z-10">
+              Veg
+            </div>
+          )}
+          {item.discount && (
+            <div className="absolute bottom-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold z-10">
+              {item.discount}% OFF
+            </div>
+          )}
         </div>
         
         <CardContent className="p-4">

@@ -105,6 +105,11 @@ async function apiRequest(endpoint, options = {}) {
     },
   };
 
+  // Remove Content-Type header if explicitly set to null (for FormData)
+  if (finalOptions.headers['Content-Type'] === null) {
+    delete finalOptions.headers['Content-Type'];
+  }
+
   // Create abort controller for timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -295,19 +300,23 @@ export const orderApi = {
       body: JSON.stringify(orderData)
     });
   },
+  getOrders: () => apiRequest('/orders'),
   getOrder: (orderNumber) => apiRequest(`/orders/${orderNumber}`),
   trackOrder: (orderNumber) => apiRequest(`/orders/${orderNumber}/track`)
 };
 
 export const restaurantOwnerApi = {
   getOwnedRestaurants: () => apiRequest('/restaurants/owned'),
+  getUserRestaurant: () => apiRequest('/user/restaurant'),
   createRestaurant: (formData) => {
     const options = {
       method: 'POST',
       body: formData,
-      headers: {} // Remove Content-Type to let browser set it with boundary for FormData
+      headers: {
+        // Explicitly set Content-Type to null to prevent default application/json
+        'Content-Type': null
+      }
     };
-    delete options.headers['Content-Type'];
     return apiRequest('/restaurants', options);
   },
   getRestaurant: (id) => apiRequest(`/restaurants/${id}/manage`),
@@ -371,6 +380,15 @@ export const restaurantOwnerApi = {
     return apiRequest(`/restaurants/${restaurantId}/categories/sort`, {
       method: 'POST',
       body: JSON.stringify({ categories: sortData })
+    });
+  },
+  
+  // Order management
+  getRestaurantOrders: (restaurantId) => apiRequest(`/restaurants/${restaurantId}/orders`),
+  updateOrderStatus: (orderId, status) => {
+    return apiRequest(`/orders/${orderId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status })
     });
   }
 };

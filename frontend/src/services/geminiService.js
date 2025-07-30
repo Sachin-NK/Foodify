@@ -1,12 +1,14 @@
 /**
- * Gemini API Service
+ * Gemini AI Service
  * Handles communication with Google's Gemini API for AI chatbot functionality
+ * Includes rate limiting, circuit breaker pattern, and comprehensive error handling
  */
 
+// API configuration
 const GEMINI_API_KEY = 'AIzaSyCC8aYtlnrwJOaJ_5ea7bBBPlU0cpUqrBY';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
-// Rate limiting configuration
+// Rate limiting configuration to prevent API abuse
 const RATE_LIMIT = {
   maxRequestsPerMinute: 60,
   maxRequestsPerHour: 1000,
@@ -15,7 +17,7 @@ const RATE_LIMIT = {
   requestCount: { minute: 0, hour: 0 }
 };
 
-// Circuit breaker for handling overload situations
+// Circuit breaker pattern implementation for handling API failures
 const CIRCUIT_BREAKER = {
   failureCount: 0,
   maxFailures: 5, // Allow more failures before opening
@@ -24,8 +26,8 @@ const CIRCUIT_BREAKER = {
   state: 'CLOSED' // CLOSED, OPEN, HALF_OPEN
 };
 
-// Error types for better error handling
-export const ERROR_TYPES = {
+// Error classification for better error handling and user feedback  
+const ErrorTypes = {
   NETWORK_ERROR: 'NETWORK_ERROR',
   API_ERROR: 'API_ERROR',
   RATE_LIMIT_ERROR: 'RATE_LIMIT_ERROR',

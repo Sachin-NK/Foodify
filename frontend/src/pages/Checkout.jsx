@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
-import { ArrowLeft, Clock, CreditCard, Smartphone, Banknote } from 'lucide-react';
+import { ArrowLeft, Clock, CreditCard, Smartphone, Banknote, CheckCircle, Loader2 } from 'lucide-react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { orderApi } from '@/lib/api';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -18,13 +19,16 @@ import LoadingSpinner from '../components/LoadingSpinner';
 const Checkout = () => {
   const [, setLocation] = useLocation();
   const { items, subtotal, deliveryFee, total, clearCart } = useCart();
+  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderNumber, setOrderNumber] = useState('');
   
   const [formData, setFormData] = useState({
-    customer_name: '',
-    customer_email: '',
-    customer_phone: '',
+    customer_name: user?.name || '',
+    customer_email: user?.email || '',
+    customer_phone: user?.phone || '',
     delivery_address: '',
     special_instructions: '',
     paymentMethod: 'cash'
@@ -46,8 +50,21 @@ const Checkout = () => {
       return;
     }
 
+    if (items.length === 0) {
+      toast({
+        title: "Cart is empty",
+        description: "Please add items to your cart before placing an order.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
+      
+      // Ensure cart is synced with backend before placing order
+      console.log('Current cart items:', items);
+      console.log('Cart total:', total);
       
       const orderData = {
         customer_name: formData.customer_name,
@@ -57,20 +74,45 @@ const Checkout = () => {
         special_instructions: formData.special_instructions
       };
 
+      console.log('Placing order with data:', orderData);
       const response = await orderApi.placeOrder(orderData);
+      console.log('Order response:', response);
       
-      toast({
-        title: "Order placed successfully!",
-        description: `Your order #${response.order_number} has been confirmed.`,
-      });
+      // Show success animation
+      setOrderSuccess(true);
+      setOrderNumber(response.order_number);
       
-      await clearCart();
-      setLocation(`/track-order/${response.order_number}`);
+      // Wait for animation to complete before redirecting
+      setTimeout(async () => {
+        toast({
+          title: "Order placed successfully!",
+          description: `Your order #${response.order_number} has been confirmed.`,
+        });
+        
+        await clearCart();
+        setLocation(`/track-order/${response.order_number}`);
+      }, 2000);
       
     } catch (error) {
+      console.error('Order placement error:', error);
+      
+      let errorMessage = "There was an error placing your order. Please try again.";
+      
+      if (error.message) {
+        if (error.message.includes('Cart is empty')) {
+          errorMessage = "Your cart is empty. Please add items to your cart before placing an order.";
+        } else if (error.message.includes('validation')) {
+          errorMessage = "Please check all required fields and try again.";
+        } else if (error.message.includes('authentication') || error.message.includes('Unauthenticated')) {
+          errorMessage = "Please log in to place an order.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Order failed",
-        description: error.message || "There was an error placing your order. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -81,6 +123,31 @@ const Checkout = () => {
   const formatPrice = (price) => {
     return `Rs. ${price.toLocaleString()}`;
   };
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated()) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 theme-transition py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card className="p-8 text-center">
+            <CardContent>
+              <p className="text-gray-500 text-lg mb-4">Please log in to place an order</p>
+              <Link href="/login">
+                <Button className="bg-orange-500 hover:bg-orange-600 mr-4">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button variant="outline">
+                  Register
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -102,7 +169,29 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 theme-transition py-8">
+    <div className="min-h-screen bg-white dark:bg-gray-900 theme-transition py-8 relative overflow-hidden">
+      <AnimatePresence>
+        {orderSuccess && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            className="fixed inset-0 bg-green-500 bg-opacity-20 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="bg-white dark:bg-gray-800 rounded-full p-8 shadow-2xl"
+            >
+              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <p className="text-xl font-semibold text-center">Order Placed!</p>
+              <p className="text-gray-600 text-center">Order #{orderNumber}</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -119,7 +208,6 @@ const Checkout = () => {
         </motion.div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Order Form */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -225,17 +313,65 @@ const Checkout = () => {
                     </RadioGroup>
                   </div>
                   
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 text-lg font-semibold"
-                    disabled={isSubmitting}
+                  <motion.div
+                    whileTap={{ scale: 0.98 }}
+                    className="relative"
                   >
-                    {isSubmitting ? (
-                      <LoadingSpinner size="sm" />
-                    ) : (
-                      'Place Order'
-                    )}
-                  </Button>
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 text-lg font-semibold relative overflow-hidden"
+                      disabled={isSubmitting || orderSuccess}
+                    >
+                      <AnimatePresence mode="wait">
+                        {orderSuccess ? (
+                          <motion.div
+                            key="success"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            className="flex items-center justify-center"
+                          >
+                            <CheckCircle className="h-6 w-6 mr-2" />
+                            Order Placed!
+                          </motion.div>
+                        ) : isSubmitting ? (
+                          <motion.div
+                            key="loading"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center justify-center"
+                          >
+                            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                            Processing Order...
+                          </motion.div>
+                        ) : (
+                          <motion.span
+                            key="default"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                          >
+                            Place Order
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                      
+                      {/* Success animation overlay */}
+                      <AnimatePresence>
+                        {orderSuccess && (
+                          <motion.div
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 50, opacity: 0.3 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            transition={{ duration: 1.5, ease: "easeOut" }}
+                            className="absolute inset-0 bg-green-400 rounded-full"
+                            style={{ transformOrigin: 'center' }}
+                          />
+                        )}
+                      </AnimatePresence>
+                    </Button>
+                  </motion.div>
                 </form>
               </CardContent>
             </Card>

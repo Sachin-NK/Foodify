@@ -1,14 +1,26 @@
+/**
+ * Authentication Context
+ * Manages user authentication state, login/logout functionality,
+ * and role-based access control for the application
+ */
 import { createContext, useContext, useEffect, useState } from 'react';
 import { authApi } from '@/lib/api';
 
+// Create authentication context
 const AuthContext = createContext();
 
+/**
+ * AuthProvider component - Provides authentication context to the app
+ * Handles user session management, token validation, and auth state
+ */
 export const AuthProvider = ({ children }) => {
+  // Authentication state
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load user from localStorage on mount and verify token
+  // Initialize authentication on component mount
+  // Load user from localStorage and verify token validity
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -16,7 +28,7 @@ export const AuthProvider = ({ children }) => {
         if (savedUser) {
           const userData = JSON.parse(savedUser);
           
-          // Verify token is still valid by fetching user data
+          // Verify token is still valid by fetching current user data
           if (userData.token) {
             try {
               const currentUser = await authApi.getUser();

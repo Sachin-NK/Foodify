@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Edit, Trash2, Plus, Store, Menu, Settings, Clock, Tag, Phone, Mail, MapPin, Image, Eye } from "lucide-react";
+import { Edit, Trash2, Plus, Store, Menu, Settings, Clock, Tag, Phone, Mail, MapPin, Image, Eye, ShoppingBag, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 
 const RestaurantDashboard = () => {
   const { id } = useParams();
@@ -27,6 +27,8 @@ const RestaurantDashboard = () => {
   const [logoPreview, setLogoPreview] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   // Redirect if not logged in or not a restaurant owner
   useEffect(() => {
@@ -200,6 +202,96 @@ const RestaurantDashboard = () => {
     navigate(`/restaurant-menu/${id}`);
   };
 
+  const fetchOrders = async () => {
+    setLoadingOrders(true);
+    try {
+      const response = await restaurantOwnerApi.getRestaurantOrders(id);
+      setOrders(response.orders || []);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load orders. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    try {
+      await restaurantOwnerApi.updateOrderStatus(orderId, newStatus);
+      
+      // Update the order in the local state
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId 
+            ? { ...order, status: newStatus }
+            : order
+        )
+      );
+      
+      toast({
+        title: "Success!",
+        description: "Order status updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update order status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return 'text-yellow-600 bg-yellow-100';
+      case 'confirmed': return 'text-blue-600 bg-blue-100';
+      case 'preparing': return 'text-orange-600 bg-orange-100';
+      case 'out_for_delivery': return 'text-purple-600 bg-purple-100';
+      case 'delivered': return 'text-green-600 bg-green-100';
+      case 'cancelled': return 'text-red-600 bg-red-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'pending': return <AlertCircle className="h-4 w-4" />;
+      case 'confirmed': return <CheckCircle className="h-4 w-4" />;
+      case 'preparing': return <Clock className="h-4 w-4" />;
+      case 'out_for_delivery': return <ShoppingBag className="h-4 w-4" />;
+      case 'delivered': return <CheckCircle className="h-4 w-4" />;
+      case 'cancelled': return <XCircle className="h-4 w-4" />;
+      default: return <AlertCircle className="h-4 w-4" />;
+    }
+  };
+
+  const handleDeleteRestaurant = async () => {
+    if (!window.confirm('Are you sure you want to delete your restaurant? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await restaurantOwnerApi.deleteRestaurant(id);
+      
+      toast({
+        title: "Success!",
+        description: "Restaurant deleted successfully.",
+      });
+      
+      // Redirect to registration page since they no longer have a restaurant
+      navigate("/restaurant-register");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete restaurant. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -234,6 +326,10 @@ const RestaurantDashboard = () => {
           <TabsTrigger value="overview">
             <Store className="h-4 w-4 mr-2" />
             Overview
+          </TabsTrigger>
+          <TabsTrigger value="orders" onClick={fetchOrders}>
+            <ShoppingBag className="h-4 w-4 mr-2" />
+            Orders
           </TabsTrigger>
           <TabsTrigger value="menu" onClick={navigateToMenuManagement}>
             <Menu className="h-4 w-4 mr-2" />
@@ -556,6 +652,135 @@ const RestaurantDashboard = () => {
           </div>
         </TabsContent>
         
+        <TabsContent value="orders">
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
+            <CardHeader>
+              <CardTitle className="text-gray-800 dark:text-gray-100 theme-transition">Restaurant Orders</CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400 theme-transition">Manage incoming orders from customers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingOrders ? (
+                <div className="flex justify-center py-8">
+                  <LoadingSpinner size="lg" />
+                </div>
+              ) : orders.length === 0 ? (
+                <div className="text-center py-8">
+                  <ShoppingBag className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No orders yet</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Orders from customers will appear here</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {orders.map((order) => (
+                    <Card key={order.id} className="border border-gray-200 dark:border-gray-700">
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-lg">Order #{order.order_number}</CardTitle>
+                            <CardDescription>
+                              {order.customer_name} • {order.customer_phone}
+                            </CardDescription>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                              {getStatusIcon(order.status)}
+                              <span className="ml-1 capitalize">{order.status.replace('_', ' ')}</span>
+                            </span>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Delivery Address</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{order.delivery_address}</p>
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Order Details</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Total: Rs. {order.restaurant_subtotal}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Ordered: {new Date(order.created_at).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="mb-4">
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Items</h4>
+                          <div className="space-y-2">
+                            {order.items.map((item, index) => (
+                              <div key={index} className="flex justify-between items-center text-sm">
+                                <span>{item.quantity}x {item.name}</span>
+                                <span>Rs. {item.total}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {order.special_instructions && (
+                          <div className="mb-4">
+                            <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Special Instructions</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{order.special_instructions}</p>
+                          </div>
+                        )}
+                        
+                        <div className="flex flex-wrap gap-2">
+                          {order.status === 'pending' && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleStatusUpdate(order.id, 'confirmed')}
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                Confirm Order
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => handleStatusUpdate(order.id, 'cancelled')}
+                              >
+                                Cancel Order
+                              </Button>
+                            </>
+                          )}
+                          {order.status === 'confirmed' && (
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleStatusUpdate(order.id, 'preparing')}
+                              className="bg-orange-600 hover:bg-orange-700"
+                            >
+                              Start Preparing
+                            </Button>
+                          )}
+                          {order.status === 'preparing' && (
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleStatusUpdate(order.id, 'out_for_delivery')}
+                              className="bg-purple-600 hover:bg-purple-700"
+                            >
+                              Ready for Delivery
+                            </Button>
+                          )}
+                          {order.status === 'out_for_delivery' && (
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleStatusUpdate(order.id, 'delivered')}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              Mark as Delivered
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
         <TabsContent value="menu">
           {/* Menu content is handled by navigating to a different page */}
           <div className="text-center py-12">
@@ -578,7 +803,11 @@ const RestaurantDashboard = () => {
                   <p className="text-gray-600 dark:text-gray-400 theme-transition">These actions cannot be undone</p>
                 </div>
                 
-                <Button variant="destructive" className="w-full sm:w-auto">
+                <Button 
+                  variant="destructive" 
+                  className="w-full sm:w-auto"
+                  onClick={handleDeleteRestaurant}
+                >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Restaurant
                 </Button>
