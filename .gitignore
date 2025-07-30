@@ -146,3 +146,10 @@ typings/
 
 .kiro
 .vscode
+
+.env.production 
+deploy-db.sh
+Procfile
+railway.toml
+package-lock.json
+package.json

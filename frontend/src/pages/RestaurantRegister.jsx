@@ -28,24 +28,43 @@ const RestaurantRegister = () => {
 
   // Redirect if not logged in or not a restaurant owner
   useEffect(() => {
+
+    
     if (!user) {
       navigate("/login");
       return;
     }
     
     if (!isRestaurantOwner()) {
-      navigate("/");
+      toast({
+        title: "Access Denied",
+        description: "You need to register as a restaurant owner to access this page. Please create a new account with restaurant owner role.",
+        variant: "destructive",
+      });
+      navigate("/register");
       return;
     }
 
-    // Check if user already has restaurants
+    // Check if user already has a restaurant
     const fetchRestaurants = async () => {
       try {
-        const response = await restaurantOwnerApi.getOwnedRestaurants();
-        setExistingRestaurants(response.data || []);
-        setShowRegistrationForm(response.data.length === 0);
+        const response = await restaurantOwnerApi.getUserRestaurant();
+        const restaurant = response.data;
+        
+        // If user has a restaurant, redirect to dashboard
+        if (restaurant) {
+          navigate(`/restaurant-dashboard/${restaurant.id}`);
+          return;
+        }
+        
+        // No restaurant found, show registration form
+        setExistingRestaurants([]);
+        setShowRegistrationForm(true);
       } catch (error) {
-        console.error("Error fetching restaurants:", error);
+        console.error("Error fetching restaurant:", error);
+        // For any error, assume no restaurant and show registration form
+        // The backend will handle validation when they try to register
+        setExistingRestaurants([]);
         setShowRegistrationForm(true);
       } finally {
         setLoading(false);
@@ -103,9 +122,17 @@ const RestaurantRegister = () => {
         }
       });
       
-      // Add tags as JSON string
+      // Add tags as array
       if (finalData.tags) {
-        formDataObj.append('tags', JSON.stringify(finalData.tags.split(',').map(tag => tag.trim())));
+        const tagsArray = finalData.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+        if (tagsArray.length > 0) {
+          tagsArray.forEach((tag, index) => {
+            formDataObj.append(`tags[${index}]`, tag);
+          });
+        } else {
+          // If no valid tags, add the original string as a single tag
+          formDataObj.append('tags[0]', finalData.tags.trim());
+        }
       }
       
       // Add files if they exist
@@ -115,6 +142,16 @@ const RestaurantRegister = () => {
       
       if (finalData.cover_image && finalData.cover_image.length > 0) {
         formDataObj.append('cover_image', finalData.cover_image[0]);
+      }
+      
+      // FormData is ready for submission
+      
+      // Validate required fields before sending
+      const requiredFields = ['name', 'location', 'description', 'tags', 'delivery_time', 'address', 'phone', 'email'];
+      const missingFields = requiredFields.filter(field => !finalData[field] || finalData[field].trim() === '');
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
       }
       
       const response = await restaurantOwnerApi.createRestaurant(formDataObj);
@@ -127,9 +164,44 @@ const RestaurantRegister = () => {
       // Navigate to the restaurant management page
       navigate(`/restaurant-dashboard/${response.data.id}`);
     } catch (error) {
+      console.error('Restaurant registration error:', error);
+      console.error('Error response:', error.response);
+      
+      let errorMessage = "Error: Please check your input and try again.";
+      
+      // Check if this is actually a success response that was mishandled
+      if (error.status === 201) {
+        // This was actually a successful creation, treat it as success
+        toast({
+          title: "Success!",
+          description: "Your restaurant has been registered successfully.",
+        });
+        // Navigate to dashboard if we have the restaurant data
+        if (error.data && error.data.id) {
+          navigate(`/restaurant-dashboard/${error.data.id}`);
+        }
+        return;
+      }
+      
+      if (error.data && error.data.errors) {
+        // Handle validation errors
+        const errorMessages = [];
+        Object.entries(error.data.errors).forEach(([field, messages]) => {
+          errorMessages.push(`${field}: ${messages.join(', ')}`);
+        });
+        errorMessage = errorMessages.join('\n');
+      } else if (error.data && error.data.message) {
+        errorMessage = error.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Show detailed error in console for debugging
+      console.error('Final error message:', errorMessage);
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to register restaurant. Please try again.",
+        title: "Registration Failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -145,101 +217,19 @@ const RestaurantRegister = () => {
     );
   }
 
-  // Show existing restaurants dashboard if user has restaurants
+  // If user has a restaurant, redirect to dashboard (this should not happen due to auto-redirect)
   if (!showRegistrationForm && existingRestaurants.length > 0) {
+    // This is a fallback - the useEffect should have already redirected
+    navigate(`/restaurant-dashboard/${existingRestaurants[0].id}`);
     return (
-      <div className="container mx-auto py-8 px-4 max-w-6xl min-h-screen bg-white dark:bg-gray-900 theme-transition">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 theme-transition">My Restaurants</h1>
-            <p className="text-gray-600 dark:text-gray-400 theme-transition">Manage your restaurants and menus</p>
-          </div>
-          <Button onClick={() => setShowRegistrationForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Restaurant
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {existingRestaurants.map(restaurant => (
-            <Card key={restaurant.id} className="hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 theme-transition">
-              <div className="relative">
-                {restaurant.cover_image ? (
-                  <img 
-                    src={restaurant.cover_image.startsWith('http') 
-                      ? restaurant.cover_image 
-                      : `/storage/${restaurant.cover_image}`} 
-                    alt={restaurant.name} 
-                    className="w-full h-48 object-cover rounded-t-lg" 
-                  />
-                ) : (
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded-t-lg">
-                    <Store className="h-12 w-12 text-gray-400" />
-                  </div>
-                )}
-                <div className="absolute top-2 right-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    restaurant.is_active 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {restaurant.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-              </div>
-              <CardContent className="pt-4">
-                <div className="flex items-center mb-2">
-                  {restaurant.logo ? (
-                    <img 
-                      src={restaurant.logo.startsWith('http') 
-                        ? restaurant.logo 
-                        : `/storage/${restaurant.logo}`} 
-                      alt={`${restaurant.name} logo`} 
-                      className="w-8 h-8 object-cover rounded-full mr-2" 
-                    />
-                  ) : (
-                    <Store className="h-8 w-8 text-gray-400 mr-2" />
-                  )}
-                  <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 theme-transition">{restaurant.name}</h3>
-                </div>
-                <p className="text-gray-600 dark:text-gray-400 theme-transition text-sm mb-3 line-clamp-2">{restaurant.description}</p>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 theme-transition mb-2">
-                  <span>{restaurant.location}</span>
-                </div>
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {restaurant.tags && restaurant.tags.slice(0, 3).map((tag, index) => (
-                    <span key={index} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 theme-transition px-2 py-1 rounded-full">
-                      {tag}
-                    </span>
-                  ))}
-                  {restaurant.tags && restaurant.tags.length > 3 && (
-                    <span className="text-xs text-gray-500 dark:text-gray-400 theme-transition">+{restaurant.tags.length - 3} more</span>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between pt-0">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigate(`/restaurant/${restaurant.id}`)}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View
-                </Button>
-                <Button 
-                  size="sm"
-                  onClick={() => navigate(`/restaurant-dashboard/${restaurant.id}`)}
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Manage
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+      <div className="flex justify-center items-center h-screen">
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
+
+
+
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl min-h-screen bg-white dark:bg-gray-900 theme-transition">
@@ -249,7 +239,7 @@ const RestaurantRegister = () => {
             <div>
               <CardTitle className="text-2xl font-bold">Register Your Restaurant</CardTitle>
               <CardDescription>
-                Join our platform and start serving customers online
+                Join our platform and start serving customers online. Each account can register one restaurant.
               </CardDescription>
             </div>
             {existingRestaurants.length > 0 && (
@@ -455,7 +445,7 @@ const RestaurantRegister = () => {
         </CardFooter>
       </Card>
 
-      <style jsx>{`
+      <style>{`
         .step-indicator {
           display: flex;
           flex-direction: column;

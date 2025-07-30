@@ -10,7 +10,10 @@
     "check": "tsc",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "deploy:vercel": "vercel --prod",
+    "deploy:netlify": "netlify deploy --prod --dir=dist",
+    "build:production": "NODE_ENV=production vite build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

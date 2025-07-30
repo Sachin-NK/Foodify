@@ -1,17 +1,52 @@
+/**
+ * Navigation Bar Component
+ * Main navigation component that provides access to all major sections
+ * Includes authentication controls, cart, admin access, and theme toggle
+ */
+
 import { Link, useLocation } from 'wouter';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCart, User, LogOut, Shield, MessageCircle, Store } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Shield, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { restaurantOwnerApi } from '@/lib/api';
 import ThemeToggle from './ThemeToggle';
 
 const Navbar = () => {
+  // Routing and context hooks
   const [location] = useLocation();
   const { getCartItemCount } = useCart();
   const { user, logout, isAuthenticated, isAdmin, isRestaurantOwner } = useAuth();
+  
+  // Component state
   const cartItemCount = getCartItemCount();
+  const [userRestaurant, setUserRestaurant] = useState(null);
+  const [restaurantLoading, setRestaurantLoading] = useState(false);
+
+  // Check if restaurant owner has an associated restaurant
+  // This determines whether to show restaurant management options
+  useEffect(() => {
+    const checkUserRestaurant = async () => {
+      if (isAuthenticated() && user?.role === 'restaurant_owner') {
+        setRestaurantLoading(true);
+        try {
+          const response = await restaurantOwnerApi.getUserRestaurant();
+          setUserRestaurant(response.data);
+        } catch (error) {
+          setUserRestaurant(null);
+        } finally {
+          setRestaurantLoading(false);
+        }
+      } else {
+        setUserRestaurant(null);
+      }
+    };
+
+    checkUserRestaurant();
+  }, [user, isAuthenticated]);
 
   const handleLogout = () => {
     logout();
@@ -38,59 +73,62 @@ const Navbar = () => {
           </div>
           
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/">
-              <a className={`transition-colors button-bounce ${location === '/' ? 'text-orange-500 text-glow' : 'text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400'}`}>
-                Home
-              </a>
-            </Link>
-            <Link href="/browse">
-              <a className={`transition-colors button-bounce ${location === '/browse' ? 'text-orange-500 text-glow' : 'text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400'}`}>
-                Restaurants
-              </a>
-            </Link>
-            {isAuthenticated() && (
-              <Link href="/track-order">
-                <a className={`transition-colors button-bounce ${location.startsWith('/track-order') ? 'text-orange-500 text-glow' : 'text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400'}`}>
-                  Orders
-                </a>
-              </Link>
-            )}
-            {isRestaurantOwner() && (
-              <Link href="/restaurant-register">
-                <a className={`transition-colors button-bounce ${location.startsWith('/restaurant') ? 'text-orange-500 text-glow' : 'text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400'}`}>
-                  My Restaurant
-                </a>
-              </Link>
+            {isAuthenticated() && user?.role === 'restaurant_owner' ? (
+              // Restaurant Owner Navigation
+              <>
+                {userRestaurant ? (
+                  // Has restaurant - show dashboard
+                  <Link href={`/restaurant-dashboard/${userRestaurant.id}`} className={`transition-colors button-bounce ${location.startsWith('/restaurant-dashboard') ? 'text-orange-500 text-glow' : 'text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400'}`}>
+                    Dashboard
+                  </Link>
+                ) : (
+                  // No restaurant - show registration
+                  <Link href="/restaurant-register" className={`transition-colors button-bounce ${location.startsWith('/restaurant-register') ? 'text-orange-500 text-glow' : 'text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400'}`}>
+                    Register Restaurant
+                  </Link>
+                )}
+              </>
+            ) : (
+              // Customer Navigation
+              <>
+                <Link href="/" className={`transition-colors button-bounce ${location === '/' ? 'text-orange-500 text-glow' : 'text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400'}`}>
+                  Home
+                </Link>
+                <Link href="/browse" className={`transition-colors button-bounce ${location === '/browse' ? 'text-orange-500 text-glow' : 'text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400'}`}>
+                  Restaurants
+                </Link>
+                {isAuthenticated() && (
+                  <Link href="/orders" className={`transition-colors button-bounce ${location.startsWith('/orders') || location.startsWith('/track-order') ? 'text-orange-500 text-glow' : 'text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400'}`}>
+                    Orders
+                  </Link>
+                )}
+              </>
             )}
           </div>
           
           <div className="flex items-center space-x-4">
             <ThemeToggle />
-            <Link href="/cart">
-              <Button variant="ghost" className="relative p-2 text-gray-700 hover:text-orange-500 dark:text-gray-300 dark:hover:text-orange-400 button-bounce interactive-bounce">
+            {!(isAuthenticated() && user?.role === 'restaurant_owner') && (
+              <Link href="/cart" className="relative p-2 text-gray-700 hover:text-orange-500 dark:text-gray-300 dark:hover:text-orange-400 button-bounce interactive-bounce">
                 <ShoppingCart className="h-6 w-6" />
                 {cartItemCount > 0 && (
                   <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white cart-badge">
                     {cartItemCount}
                   </Badge>
                 )}
-              </Button>
-            </Link>
+              </Link>
+            )}
             
             {isAuthenticated() ? (
               <div className="flex items-center space-x-2">
                 {isAdmin() && (
-                  <Link href="/admin">
-                    <Button variant="ghost" className="p-2 text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 button-bounce interactive-bounce">
-                      <Shield className="h-5 w-5" />
-                    </Button>
+                  <Link href="/admin" className="p-2 text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 button-bounce interactive-bounce">
+                    <Shield className="h-5 w-5" />
                   </Link>
                 )}
-                {isRestaurantOwner() && (
-                  <Link href="/restaurant-register">
-                    <Button variant="ghost" className="p-2 text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 button-bounce interactive-bounce">
-                      <Store className="h-5 w-5" />
-                    </Button>
+                {isAuthenticated() && user?.role === 'restaurant_owner' && (
+                  <Link href={userRestaurant ? `/restaurant-dashboard/${userRestaurant.id}` : '/restaurant-register'} className="p-2 text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 button-bounce interactive-bounce">
+                    <Store className="h-5 w-5" />
                   </Link>
                 )}
                 <div className="flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg">
@@ -107,10 +145,10 @@ const Navbar = () => {
               </div>
             ) : (
               <Link href="/login">
-                <Button className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 button-bounce special-button">
+                <div className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 button-bounce special-button cursor-pointer flex items-center">
                   <User className="h-4 w-4 mr-2" />
                   <span className="hidden md:block">Login</span>
-                </Button>
+                </div>
               </Link>
             )}
           </div>

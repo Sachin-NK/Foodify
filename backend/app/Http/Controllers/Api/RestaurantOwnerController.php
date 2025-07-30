@@ -11,6 +11,28 @@ use Illuminate\Support\Facades\Validator;
 class RestaurantOwnerController extends Controller
 {
     /**
+     * Get user's restaurant (simpler endpoint without middleware)
+     */
+    public function getUserRestaurant(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+        
+        $restaurant = Restaurant::where('owner_id', $user->id)->first();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $restaurant
+        ]);
+    }
+
+    /**
      * Get all restaurants owned by the authenticated user
      */
     public function index(Request $request)
@@ -29,6 +51,18 @@ class RestaurantOwnerController extends Controller
      */
     public function store(Request $request)
     {
+        // Check if user already has a restaurant
+        $existingRestaurant = Restaurant::where('owner_id', $request->user()->id)->first();
+        if ($existingRestaurant) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You already have a restaurant registered. Each account can only have one restaurant.',
+                'errors' => [
+                    'general' => ['You already have a restaurant registered']
+                ]
+            ], 422);
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
@@ -44,6 +78,11 @@ class RestaurantOwnerController extends Controller
         ]);
 
         if ($validator->fails()) {
+            \Log::error('Restaurant registration validation failed:', [
+                'errors' => $validator->errors()->toArray(),
+                'input' => $request->all()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -92,13 +131,31 @@ class RestaurantOwnerController extends Controller
             $restaurantData['cover_image'] = $coverPath;
         }
 
-        $restaurant = Restaurant::create($restaurantData);
+        try {
+            $restaurant = Restaurant::create($restaurantData);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Restaurant created successfully',
-            'data' => $restaurant
-        ], 201);
+            \Log::info('Restaurant created successfully:', [
+                'restaurant_id' => $restaurant->id,
+                'restaurant_name' => $restaurant->name
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Restaurant created successfully',
+                'data' => $restaurant
+            ], 201);
+        } catch (\Exception $e) {
+            \Log::error('Restaurant creation failed:', [
+                'error' => $e->getMessage(),
+                'data' => $restaurantData
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create restaurant: ' . $e->getMessage(),
+                'errors' => ['general' => ['Database error occurred']]
+            ], 500);
+        }
     }
 
     /**
@@ -213,7 +270,7 @@ class RestaurantOwnerController extends Controller
     }
 
     /**
-     * Soft delete restaurant
+     * Delete restaurant permanently
      */
     public function destroy(Request $request, $id)
     {
@@ -227,12 +284,20 @@ class RestaurantOwnerController extends Controller
             ], 404);
         }
 
-        // Soft delete by setting is_active to false
-        $restaurant->update(['is_active' => false]);
+        // Delete associated files if they exist
+        if ($restaurant->logo) {
+            Storage::disk('public')->delete($restaurant->logo);
+        }
+        if ($restaurant->cover_image) {
+            Storage::disk('public')->delete($restaurant->cover_image);
+        }
+
+        // Delete the restaurant permanently
+        $restaurant->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Restaurant deactivated successfully'
+            'message' => 'Restaurant deleted successfully'
         ]);
     }
 }

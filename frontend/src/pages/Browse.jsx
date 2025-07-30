@@ -8,9 +8,8 @@ import { Button } from '@/components/ui/button';
 import RestaurantCard from '@/components/RestaurantCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import LoadingState, { RestaurantGridSkeleton } from '@/components/LoadingState';
-import ApiErrorDisplay from '@/components/ApiErrorDisplay';
-import { useApiError } from '@/hooks/useApiError';
 import { restaurantApi } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 const Browse = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,7 +18,8 @@ const Browse = () => {
   const [deliveryTimeFilter, setDeliveryTimeFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [restaurants, setRestaurants] = useState([]);
-  const { error, isRetrying, handleError, clearError, retry } = useApiError();
+  const [error, setError] = useState(null);
+  const { toast } = useToast();
   
   // Fetch restaurants from Laravel API
   useEffect(() => {
@@ -29,7 +29,7 @@ const Browse = () => {
   const fetchRestaurants = async () => {
     try {
       setIsLoading(true);
-      clearError();
+      setError(null);
       const params = {};
       
       if (searchQuery) params.search = searchQuery;
@@ -40,8 +40,14 @@ const Browse = () => {
       const data = await restaurantApi.getAll(params);
       setRestaurants(data);
     } catch (err) {
-      handleError(err);
+      console.error('Failed to fetch restaurants:', err);
+      setError(err.message || 'Failed to load restaurants');
       setRestaurants([]);
+      toast({
+        title: "Error",
+        description: "Failed to load restaurants. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -76,12 +82,17 @@ const Browse = () => {
   if (error && !isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 theme-transition">
-        <ApiErrorDisplay 
-          error={error}
-          onRetry={() => retry(fetchRestaurants)}
-          isRetrying={isRetrying}
-          className="max-w-md mx-auto"
-        />
+        <Card className="max-w-md mx-auto">
+          <CardContent className="pt-6 text-center">
+            <p className="text-red-500 mb-4">{error}</p>
+            <Button 
+              onClick={fetchRestaurants}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

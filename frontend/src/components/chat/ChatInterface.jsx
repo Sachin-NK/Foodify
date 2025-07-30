@@ -113,11 +113,11 @@ const ChatInterface = ({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className={`fixed ${getPositionClasses()} w-80 h-96 md:w-96 md:h-[500px] z-50 ${className}`}
+            className={`fixed ${getPositionClasses()} w-80 h-96 md:w-96 md:h-[500px] z-50 chat-interface ${className}`}
           >
-            <Card className="h-full shadow-2xl border-0 bg-white dark:bg-gray-900 overflow-hidden">
+            <Card className="h-full shadow-2xl border-0 bg-white dark:bg-gray-900 flex flex-col overflow-hidden">
               {/* Header */}
-              <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 flex-shrink-0">
+              <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 flex-shrink-0 card-header">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -166,12 +166,12 @@ const ChatInterface = ({
               </CardHeader>
 
               {/* Content */}
-              <CardContent className="p-0 h-full flex flex-col">
+              <CardContent className="p-0 flex-1 flex flex-col min-h-0 card-content">
                 {/* Messages */}
                 <MessageList
                   messages={messages}
                   isTyping={isTyping}
-                  className="flex-1"
+                  className="flex-1 min-h-0"
                 />
 
                 {/* Quick Actions */}

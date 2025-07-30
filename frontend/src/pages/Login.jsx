@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { restaurantOwnerApi } from '@/lib/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Login = () => {
@@ -58,7 +59,25 @@ const Login = () => {
           description: `Welcome back, ${result.user.name}!`,
         });
         
-        setLocation('/browse');
+        // Redirect based on user role
+        if (result.user.role === 'restaurant_owner') {
+          // Check if restaurant owner has a restaurant
+          try {
+            const restaurantResponse = await restaurantOwnerApi.getUserRestaurant();
+            if (restaurantResponse.data) {
+              // Has restaurant, go to dashboard
+              setLocation(`/restaurant-dashboard/${restaurantResponse.data.id}`);
+            } else {
+              // No restaurant, go to registration
+              setLocation('/restaurant-register');
+            }
+          } catch (error) {
+            // Error checking restaurant, default to registration
+            setLocation('/restaurant-register');
+          }
+        } else {
+          setLocation('/browse');
+        }
       } else {
         toast({
           title: "Login failed",
