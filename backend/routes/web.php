@@ -17,6 +17,16 @@ Route::get('/', function () {
     return response()->json([
         'message' => 'Foodify API is running!',
         'status' => 'success',
+        'timestamp' => now(),
+        'app_name' => config('app.name'),
+        'environment' => config('app.env')
+    ]);
+});
+
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'healthy',
+        'database' => 'checking...',
         'timestamp' => now()
     ]);
 });
