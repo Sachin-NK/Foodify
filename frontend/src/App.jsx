@@ -19,6 +19,7 @@ import TrackOrder from "@/pages/TrackOrder";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Admin from "@/pages/Admin";
+// Debug imports removed
 import RestaurantRegister from "@/pages/RestaurantRegister";
 import RestaurantDashboard from "@/pages/RestaurantDashboard";
 import RestaurantMenu from "@/pages/RestaurantMenu";

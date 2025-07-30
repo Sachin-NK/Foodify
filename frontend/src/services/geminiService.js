@@ -4,7 +4,7 @@
  */
 
 const GEMINI_API_KEY = 'AIzaSyCC8aYtlnrwJOaJ_5ea7bBBPlU0cpUqrBY';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
 // Rate limiting configuration
 const RATE_LIMIT = {
@@ -30,13 +30,13 @@ export const ERROR_TYPES = {
  */
 export const sanitizeUserInput = (input) => {
   if (typeof input !== 'string') return '';
-  
+
   // Remove potential XSS vectors
   const sanitized = input
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/javascript:/gi, '')
     .replace(/on\w+\s*=/gi, '');
-  
+
   // Limit input length
   return sanitized.substring(0, 1000).trim();
 };
@@ -49,7 +49,7 @@ const checkRateLimit = () => {
   const now = Date.now();
   const oneMinute = 60 * 1000;
   const oneHour = 60 * 60 * 1000;
-  
+
   // Reset counters if time windows have passed
   if (now - RATE_LIMIT.lastRequestTime > oneMinute) {
     RATE_LIMIT.requestCount.minute = 0;
@@ -57,7 +57,7 @@ const checkRateLimit = () => {
   if (now - RATE_LIMIT.lastRequestTime > oneHour) {
     RATE_LIMIT.requestCount.hour = 0;
   }
-  
+
   return (
     RATE_LIMIT.requestCount.minute < RATE_LIMIT.maxRequestsPerMinute &&
     RATE_LIMIT.requestCount.hour < RATE_LIMIT.maxRequestsPerHour
@@ -80,7 +80,7 @@ const updateRateLimit = () => {
  */
 export const formatSystemPrompt = (platformContext = {}) => {
   const { page, user, cart, currentRestaurant, recentOrders } = platformContext;
-  
+
   let systemPrompt = `You are Foodie, a helpful AI assistant for the Foodify food delivery platform. You help customers with:
 - Finding restaurants and menu items
 - Placing orders and managing cart
@@ -93,30 +93,30 @@ Current context:`;
   if (page) {
     systemPrompt += `\n- User is on: ${page.route} (${page.title})`;
   }
-  
+
   if (user?.isAuthenticated) {
     systemPrompt += `\n- User: ${user.name || 'Authenticated user'}`;
   } else {
     systemPrompt += `\n- User: Not logged in`;
   }
-  
+
   if (cart?.items?.length > 0) {
     systemPrompt += `\n- Cart: ${cart.items.length} items, Total: Rs. ${cart.total}`;
     if (cart.restaurant) {
       systemPrompt += ` from ${cart.restaurant.name}`;
     }
   }
-  
+
   if (currentRestaurant) {
     systemPrompt += `\n- Viewing restaurant: ${currentRestaurant.name} (${currentRestaurant.cuisine})`;
   }
-  
+
   if (recentOrders?.length > 0) {
     systemPrompt += `\n- Recent orders: ${recentOrders.length} orders`;
   }
 
   systemPrompt += `\n\nBe helpful, friendly, and concise. Provide specific assistance based on the current context. If you can't help with something, suggest contacting support.`;
-  
+
   return systemPrompt;
 };
 
@@ -129,28 +129,28 @@ Current context:`;
  */
 const retryWithBackoff = async (fn, maxRetries = 3, baseDelay = 1000) => {
   let lastError;
-  
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error;
-      
+
       if (attempt === maxRetries) {
         throw error;
       }
-      
+
       // Don't retry on certain error types
       if (error.type === ERROR_TYPES.VALIDATION_ERROR || error.type === ERROR_TYPES.RATE_LIMIT_ERROR) {
         throw error;
       }
-      
+
       // Exponential backoff
       const delay = baseDelay * Math.pow(2, attempt);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  
+
   throw lastError;
 };
 
@@ -223,16 +223,16 @@ class GeminiService {
   async generateResponse(message, platformContext, sessionId) {
     const systemPrompt = formatSystemPrompt(platformContext);
     const conversationHistory = this.getConversationHistory(sessionId);
-    
+
     // Build the prompt with context and history
     let fullPrompt = systemPrompt + '\n\nConversation:\n';
-    
+
     // Add recent conversation history (last 10 messages)
     const recentHistory = conversationHistory.slice(-10);
     recentHistory.forEach(msg => {
       fullPrompt += `${msg.role}: ${msg.content}\n`;
     });
-    
+
     fullPrompt += `user: ${message}\nassistant:`;
 
     const requestBody = {
@@ -285,7 +285,7 @@ class GeminiService {
     }
 
     const data = await response.json();
-    
+
     if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
       throw {
         type: ERROR_TYPES.API_ERROR,
@@ -294,7 +294,7 @@ class GeminiService {
     }
 
     const aiResponse = data.candidates[0].content.parts[0].text;
-    
+
     // Update conversation history
     this.updateConversationHistory(sessionId, [
       { role: 'user', content: message },
@@ -321,12 +321,12 @@ class GeminiService {
   updateConversationHistory(sessionId, messages) {
     const history = this.getConversationHistory(sessionId);
     history.push(...messages);
-    
+
     // Keep only last 50 messages to prevent memory issues
     if (history.length > 50) {
       history.splice(0, history.length - 50);
     }
-    
+
     this.conversationHistory.set(sessionId, history);
   }
 
