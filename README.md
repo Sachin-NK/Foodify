@@ -1,4 +1,4 @@
-# 🍕 Foodify
+# Foodify
 
 A modern full-stack food ordering platform built with React and Laravel, featuring a modern UI, real-time cart management, and seamless order processing.
 
