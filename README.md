@@ -30,7 +30,7 @@ A modern full-stack food ordering platform built with React and Laravel, featuri
 
 
 
-## 🎯 Features
+## Features
 
 ### Dark Mode System
 - **Seamless Theme Switching** - Toggle between light and dark modes with smooth transitions
