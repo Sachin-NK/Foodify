@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '../context/CartContext';
 
 const CartItem = ({ item }) => {
-  con { updateQuantity, removeFromCart } = useCart();
+  const { updateQuantity, removeFromCart } = useCart();
 
   const handleIncrease = () => {
     updateQuantity(item.id, item.quantity + 1);
